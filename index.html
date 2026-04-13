@@ -1,0 +1,1160 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Leitos &amp; Calhas — Eng. Igor Nardy</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@600;700;900&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+:root{
+  --ink:rgb(13,13,13);--amber:rgb(250,179,39);--teal:rgb(63,158,162);
+  --gray:rgb(77,77,77);--light:rgb(200,200,200);
+  --bg:#eef1f5;--panel:#fff;--border:#d5d9e2;--muted:#6b7280;
+  --red:#dc2626;--green:#16a34a;--blue:#2563eb;
+  --sans:'Barlow',sans-serif;--mono:'JetBrains Mono',monospace;--cond:'Barlow Condensed',sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:13px;min-height:100vh;overflow:hidden}
+
+/* ══ HEADER ══ */
+header{
+  background:var(--ink);border-bottom:3px solid var(--amber);
+  padding:0 20px;display:flex;align-items:center;gap:14px;
+  height:52px;position:sticky;top:0;z-index:200;
+}
+.h-logo{width:32px;height:32px;border:2px solid var(--amber);border-radius:5px;display:grid;place-items:center;background:rgba(250,179,39,.12);flex-shrink:0}
+.h-title h1{font-family:var(--cond);font-size:17px;font-weight:900;letter-spacing:2.5px;color:#fff;line-height:1;text-transform:uppercase}
+.h-title p{font-family:var(--mono);font-size:8px;color:rgba(255,255,255,.45);letter-spacing:1.2px;margin-top:2px}
+
+/* Main nav tabs */
+.h-nav{display:flex;gap:0;margin-left:28px;height:52px;align-items:stretch}
+.h-navbtn{display:flex;align-items:center;gap:7px;padding:0 18px;border:none;background:none;color:rgba(255,255,255,.55);font-family:var(--cond);font-size:12px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;cursor:pointer;border-bottom:3px solid transparent;transition:all .2s;white-space:nowrap}
+.h-navbtn svg{flex-shrink:0;opacity:.7}
+.h-navbtn.active{color:#fff;border-bottom-color:var(--amber)}
+.h-navbtn:hover:not(.active){color:rgba(255,255,255,.8)}
+
+.h-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+.h-badge{background:rgba(63,158,162,.2);border:1px solid rgba(63,158,162,.4);border-radius:4px;padding:4px 10px;font-family:var(--mono);font-size:8px;color:var(--teal);letter-spacing:.8px;white-space:nowrap}
+.h-eng{display:flex;align-items:center;gap:8px;padding:5px 12px 5px 6px;border:1.5px solid rgba(250,179,39,.4);border-radius:20px;background:rgba(250,179,39,.08)}
+.h-eng-av{width:26px;height:26px;border-radius:50%;background:var(--amber);display:grid;place-items:center;font-family:var(--cond);font-size:11px;font-weight:900;color:var(--ink);flex-shrink:0}
+.h-eng-txt{font-family:var(--cond);font-size:12px;font-weight:700;color:#fff;letter-spacing:.5px;line-height:1.1}
+.h-eng-sub{font-family:var(--mono);font-size:7px;color:rgba(255,255,255,.45);letter-spacing:.8px}
+
+/* ══ PAGE VIEWS ══ */
+.page{display:none;height:calc(100vh - 52px)}
+.page.active{display:flex}
+
+/* ══ DESIGNER PAGE — 3-col layout ══ */
+#pg-designer{flex-direction:row}
+
+.col-left{width:290px;min-width:290px;background:var(--panel);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow-y:auto;height:100%}
+.col-mid{flex:1;display:flex;flex-direction:column;overflow:hidden;height:100%;background:var(--bg)}
+.col-right{width:272px;min-width:272px;background:var(--panel);border-left:1px solid var(--border);display:flex;flex-direction:column;overflow-y:auto;height:100%}
+
+/* ══ SECTION TITLES ══ */
+.stitle{font-family:var(--cond);font-size:9px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:var(--muted);padding:8px 12px 6px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:6px;background:#fafbfc;flex-shrink:0}
+.stitle::before{content:'';width:2.5px;height:10px;background:var(--amber);border-radius:2px;flex-shrink:0}
+
+/* ══ CONTROLS ══ */
+.ctrl{padding:9px 12px;border-bottom:1px solid var(--border);flex-shrink:0}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px}
+.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;margin-bottom:6px}
+.fld{margin-bottom:6px}
+.lbl{display:block;font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:3px;font-family:var(--mono)}
+select,input[type=number],input[type=text]{background:#f8f9fa;border:1px solid var(--border);color:var(--ink);border-radius:4px;padding:5px 8px;font-family:var(--mono);font-size:11px;outline:none;width:100%;transition:border-color .15s;-webkit-appearance:none}
+select:focus,input:focus{border-color:var(--teal);background:#fff}
+input[type=text]{font-family:var(--sans);font-size:12px}
+
+/* ══ TYPE TABS ══ */
+.type-tabs{display:flex;padding:8px 10px;gap:4px;border-bottom:1px solid var(--border);flex-shrink:0}
+.type-tab{flex:1;padding:5px 3px;background:#f0f2f5;border:1px solid var(--border);color:var(--muted);font-family:var(--cond);font-size:11px;font-weight:700;cursor:pointer;transition:all .15s;text-transform:uppercase;border-radius:4px;text-align:center}
+.type-tab.active{background:rgba(250,179,39,.15);border-color:var(--amber);color:var(--ink)}
+.type-tab:hover:not(.active){background:#e8eaed}
+
+/* ══ TOGGLES ══ */
+.tog-row{display:flex;align-items:flex-start;gap:8px;padding:3px 0;margin-bottom:3px}
+.tog-lbl{font-family:var(--mono);font-size:9px;color:var(--gray);flex:1;line-height:1.35;padding-top:2px}
+.toggle{position:relative;width:30px;height:17px;flex-shrink:0;margin-top:2px}
+.toggle input{opacity:0;width:0;height:0}
+.slider{position:absolute;inset:0;background:var(--light);border-radius:20px;cursor:pointer;transition:.25s}
+.slider::before{content:'';position:absolute;height:11px;width:11px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:.25s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+input:checked+.slider{background:var(--teal)}
+input:checked+.slider::before{transform:translateX(13px)}
+
+/* ══ CHIPS ══ */
+.chips{display:flex;gap:4px;flex-wrap:wrap;margin-top:6px}
+.chip{background:rgba(63,158,162,.1);border:1px solid rgba(63,158,162,.22);border-radius:3px;padding:2px 6px;font-family:var(--mono);font-size:8px;color:var(--teal)}
+.chip.amber{background:rgba(250,179,39,.1);border-color:rgba(250,179,39,.3);color:#8a6000}
+.chip.red{background:rgba(220,38,38,.08);border-color:rgba(220,38,38,.25);color:var(--red)}
+
+/* ══ TRECHOS ══ */
+.trecho-area{padding:8px 10px;border-bottom:1px solid var(--border);background:#fafbfc;flex-shrink:0}
+.trecho-tabs{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:6px}
+.trecho-tab{display:inline-flex;align-items:center;gap:4px;padding:4px 9px;border:1.5px solid var(--border);border-radius:20px;cursor:pointer;background:#fff;transition:all .15s;font-family:var(--cond);font-size:11px;font-weight:700;color:var(--muted)}
+.trecho-tab.active{background:rgba(63,158,162,.1);border-color:var(--teal);color:var(--teal)}
+.trecho-tab:hover:not(.active){background:#f0f2f5}
+.trecho-tab .tl{font-size:13px}
+.trecho-tab .tfill{font-family:var(--mono);font-size:8px}
+.del-tr{font-size:9px;color:var(--light);cursor:pointer;transition:color .15s;padding:0 1px}
+.del-tr:hover{color:var(--red)}
+.trecho-add-row{display:flex;gap:5px;align-items:center}
+
+/* ══ CIRCUIT LIST ══ */
+.circuit-list{flex:1;overflow-y:auto}
+.c-item{display:flex;align-items:center;padding:6px 12px;gap:6px;border-bottom:1px solid var(--border);transition:background .1s}
+.c-item:hover{background:#f8f9fa}
+.c-ring{width:9px;height:9px;border-radius:2px;flex-shrink:0}
+.c-info{flex:1;min-width:0}
+.c-name{font-weight:600;font-size:11px;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.c-detail{font-family:var(--mono);font-size:8px;color:var(--muted);margin-top:1px}
+.c-area{font-family:var(--mono);font-size:9px;color:var(--gray);text-align:right;flex-shrink:0;line-height:1.4}
+.del-btn{background:none;border:none;cursor:pointer;color:var(--light);font-size:11px;padding:2px;transition:color .15s;flex-shrink:0}
+.del-btn:hover{color:var(--red)}
+.empty-state{padding:20px 12px;text-align:center;color:var(--muted);font-size:11px}
+.empty-ico{font-size:20px;margin-bottom:5px;opacity:.2}
+.add-btn{width:100%;padding:7px;background:var(--amber);border:none;color:var(--ink);border-radius:4px;font-family:var(--cond);font-size:12px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;cursor:pointer;transition:opacity .15s;margin-top:3px}
+.add-btn:hover{opacity:.85}
+
+/* ══ CANVAS AREA (middle column) ══ */
+.canvas-area{flex:1;display:flex;flex-direction:column;padding:12px;gap:0;overflow:hidden}
+.canvas-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;flex-shrink:0}
+.canvas-title-txt{font-family:var(--cond);font-size:13px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--gray)}
+.exp-row{display:flex;gap:5px}
+.exp-btn{padding:5px 11px;border:1.5px solid var(--border);border-radius:4px;background:#fff;color:var(--gray);font-family:var(--cond);font-size:10px;font-weight:700;cursor:pointer;transition:all .15s;white-space:nowrap}
+.exp-btn:hover{border-color:var(--teal);color:var(--teal)}
+.exp-btn.prim{background:var(--teal);color:#fff;border-color:var(--teal)}
+.exp-btn.amber{background:var(--amber);color:var(--ink);border-color:var(--amber)}
+.exp-btn.prim:hover,.exp-btn.amber:hover{opacity:.85}
+
+.cv-shell{flex:1;position:relative;background:#fff;border:1px solid var(--border);border-radius:6px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+canvas{display:block;width:100%;height:100%}
+.cv-ph{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--muted);gap:10px;font-size:12px;background:#fff}
+.cv-ph .pi{font-size:40px;opacity:.1;color:var(--teal)}
+
+.legend{display:flex;gap:10px;flex-wrap:wrap;padding:6px 0 2px;border-top:1px solid var(--border);margin-top:6px;flex-shrink:0}
+.leg-item{display:flex;align-items:center;gap:4px;font-family:var(--mono);font-size:8px;color:var(--gray)}
+.leg-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;border:1.5px solid rgba(0,0,0,.1)}
+
+/* ══ RIGHT COLUMN ══ */
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:10px 10px 0}
+.stat-card{background:#f8f9fa;border:1px solid var(--border);border-radius:5px;padding:9px 10px}
+.stat-lbl{font-family:var(--mono);font-size:8px;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:2px}
+.stat-val{font-family:var(--cond);font-size:20px;font-weight:900;line-height:1}
+.stat-unit{font-family:var(--mono);font-size:7px;color:var(--muted);margin-top:1px}
+
+.fill-card{margin:8px 10px 0;background:#f8f9fa;border:1px solid var(--border);border-radius:5px;padding:10px}
+.fill-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.fill-title{font-family:var(--cond);font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted)}
+.fill-pct-lbl{font-family:var(--cond);font-size:22px;font-weight:900}
+.fill-bar-wrap{position:relative;padding-top:14px}
+.fill-bar-bg{height:7px;background:#e0e4eb;border-radius:99px;overflow:hidden;position:relative}
+.fill-bar{height:100%;border-radius:99px;transition:width .4s cubic-bezier(.4,0,.2,1)}
+.limit-line{position:absolute;top:-3px;bottom:-3px;width:1.5px;background:var(--amber);z-index:1}
+.limit-tag{position:absolute;top:-13px;font-family:var(--mono);font-size:7px;color:#8a6000;transform:translateX(-50%);white-space:nowrap}
+.fill-note{margin-top:5px;font-family:var(--mono);font-size:7.5px;color:var(--muted);line-height:1.5}
+
+.gf-card{margin:6px 10px 0;background:rgba(250,179,39,.07);border:1px solid rgba(250,179,39,.25);border-radius:5px;padding:8px 10px;display:none}
+
+.rec-section{padding:8px 10px 0;flex:1;overflow-y:auto}
+.rec-title{font-family:var(--cond);font-size:8px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+.rec-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px}
+.rec-item{border:1px solid var(--border);border-radius:4px;padding:5px 7px;cursor:pointer;transition:all .15s;background:#fff}
+.rec-item:hover{border-color:var(--teal)}
+.rec-item.selected{border-color:var(--teal);background:rgba(63,158,162,.06)}
+.rec-item.ok{border-left:3px solid var(--green)}
+.rec-item.warn{border-left:3px solid var(--amber)}
+.rec-item.over{border-left:3px solid var(--red);opacity:.4}
+.rec-sz{font-family:var(--cond);font-size:13px;font-weight:700;color:var(--ink);line-height:1}
+.rec-fill{font-family:var(--mono);font-size:8px;color:var(--muted);margin-top:2px}
+
+/* ══ DETAILS PAGE ══ */
+#pg-details{flex-direction:column;overflow:hidden}
+.det-topbar{background:var(--panel);border-bottom:1px solid var(--border);padding:9px 16px;display:flex;align-items:center;gap:12px;flex-shrink:0;height:46px}
+.det-tbar-title{font-family:var(--cond);font-size:12px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--gray);flex:1}
+.det-content{flex:1;overflow-y:auto;background:#e8eaed;padding:20px;display:flex;flex-direction:column;gap:20px;align-items:center}
+.det-card{background:#fff;box-shadow:0 4px 20px rgba(0,0,0,.12),0 1px 4px rgba(0,0,0,.08);border-radius:0;width:100%;max-width:1200px;position:relative}
+.det-card-label{position:absolute;top:-24px;left:0;font-family:var(--cond);font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted)}
+@media print{
+  body{overflow:visible!important}
+  header{display:none!important}
+  #pg-designer{display:none!important}
+  #pg-details{display:flex!important;height:auto!important}
+  .det-topbar{display:none!important}
+  .det-content{background:#fff!important;padding:0!important}
+  .det-card{box-shadow:none!important;max-width:100%!important;page-break-after:always}
+  .det-card-label{display:none!important}
+}
+
+/* ══ MISC ══ */
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--light);border-radius:2px}
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════ HEADER ══════════════════════════ -->
+<header>
+  <div class="h-logo">
+    <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="rgb(250,179,39)" stroke-width="2">
+      <rect x="1" y="8" width="22" height="9" rx="1"/>
+      <circle cx="6" cy="12.5" r="1.2" fill="rgb(250,179,39)" stroke="none"/>
+      <circle cx="10" cy="12.5" r="1.2" fill="rgb(250,179,39)" stroke="none"/>
+      <circle cx="14" cy="12.5" r="1.2" fill="rgb(250,179,39)" stroke="none"/>
+      <circle cx="18" cy="12.5" r="1.2" fill="rgb(250,179,39)" stroke="none"/>
+      <line x1="3" y1="8" x2="3" y2="5.5"/><line x1="21" y1="8" x2="21" y2="5.5"/>
+    </svg>
+  </div>
+  <div class="h-title">
+    <h1>Leitos &amp; Calhas</h1>
+    <p>DIMENSIONADOR TÉCNICO — NBR 5410</p>
+  </div>
+  <nav class="h-nav">
+    <button class="h-navbtn active" id="nav-designer" onclick="showPage('designer')">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="9" x2="21" y2="9"/></svg>
+      Dimensionador
+    </button>
+    <button class="h-navbtn" id="nav-details" onclick="showPage('details')">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="8" y1="8" x2="16" y2="8"/><line x1="8" y1="16" x2="13" y2="16"/></svg>
+      Detalhes
+    </button>
+  </nav>
+  <div class="h-right">
+    <div class="h-badge">⚡ NBR 5410 / IEC 60364</div>
+    <div class="h-eng">
+      <div class="h-eng-av">IN</div>
+      <div><div class="h-eng-txt">Eng. Igor Nardy</div><div class="h-eng-sub">ENG. ELETRICISTA</div></div>
+    </div>
+  </div>
+</header>
+
+<!-- ══════════════════════════ DESIGNER PAGE ══════════════════════════ -->
+<div class="page active" id="pg-designer">
+
+  <!-- LEFT COL: Config -->
+  <div class="col-left">
+    <div class="stitle">Canalização</div>
+    <div class="type-tabs">
+      <button class="type-tab active" id="tab-leito"      onclick="setType('leito')">Leito</button>
+      <button class="type-tab"        id="tab-calha"      onclick="setType('calha')">Calha</button>
+      <button class="type-tab"        id="tab-eletroduto" onclick="setType('eletroduto')">Eletroduto</button>
+    </div>
+
+    <div class="stitle">Dimensões</div>
+    <div class="ctrl">
+      <div id="leito-fields">
+        <div class="row2">
+          <div><label class="lbl">Largura (mm)</label>
+            <select id="tray-width" onchange="updateTray()">
+              <option>50</option><option>75</option><option>100</option><option>150</option>
+              <option>200</option><option value="300" selected>300</option><option>400</option><option>500</option>
+              <option>600</option><option>750</option><option>900</option><option>1000</option>
+              <option>1200</option><option>1250</option><option value="custom">Personalizado</option>
+            </select>
+          </div>
+          <div><label class="lbl">Altura (mm)</label>
+            <select id="tray-height" onchange="updateTray()">
+              <option>50</option><option>75</option><option value="100" selected>100</option>
+              <option>150</option><option value="custom">Personalizado</option>
+            </select>
+          </div>
+        </div>
+        <div id="custom-dims" style="display:none" class="row2">
+          <div><label class="lbl">Largura custom</label><input type="number" id="cw" value="300" min="10" onchange="updateTray()"/></div>
+          <div><label class="lbl">Altura custom</label><input type="number" id="ch" value="100" min="10" onchange="updateTray()"/></div>
+        </div>
+      </div>
+      <div id="eletroduto-fields" style="display:none">
+        <label class="lbl">Diâmetro Nominal</label>
+        <select id="conduit-size" onchange="updateTray()">
+          <option value="15.1">DN 16 / ½″ — Ø 15,1mm</option>
+          <option value="19.3">DN 20 / ¾″ — Ø 19,3mm</option>
+          <option value="24.1" selected>DN 25 / 1″ — Ø 24,1mm</option>
+          <option value="30.8">DN 32 / 1¼″ — Ø 30,8mm</option>
+          <option value="38.4">DN 40 / 1½″ — Ø 38,4mm</option>
+          <option value="48.9">DN 50 / 2″ — Ø 48,9mm</option>
+          <option value="60.8">DN 63 / 2½″ — Ø 60,8mm</option>
+          <option value="73.0">DN 75 / 3″ — Ø 73,0mm</option>
+          <option value="96.0">DN 100 / 4″ — Ø 96,0mm</option>
+        </select>
+      </div>
+      <div class="chips" id="tray-chips"></div>
+    </div>
+
+    <div class="stitle">Cabo e Arranjo</div>
+    <div class="ctrl">
+      <div class="row2">
+        <div><label class="lbl">Isolação</label>
+          <select id="cable-type" onchange="updateTray()"><option value="PVC">PVC 70°C</option><option value="XLPE" selected>XLPE 90°C</option></select>
+        </div>
+        <div><label class="lbl">Arranjo</label>
+          <select id="arr-mode" onchange="updateTray()">
+            <option value="flat">Em plano</option>
+            <option value="trefoil" selected>Trifólio</option>
+            <option value="bundle">Em feixe</option>
+          </select>
+        </div>
+      </div>
+      <div class="tog-row" id="spacing-row">
+        <label class="toggle"><input type="checkbox" id="spacing-chk" onchange="updateTray()"/><span class="slider"></span></label>
+        <span class="tog-lbl">Aplicar afastamento entre circuitos: espaço livre = Ø do maior cabo adjacente (NBR 5410 Tab. 52J → fg = 1,00)</span>
+      </div>
+  
+    </div>
+
+    <div class="stitle">Trechos</div>
+    <div class="trecho-area">
+      <div class="trecho-tabs" id="trecho-tabs"></div>
+      <div class="trecho-add-row">
+        <input type="text" id="trecho-name" placeholder="Nome (ex: QGBT → QD1)" style="flex:1;min-width:0"/>
+        <button class="add-btn" style="width:auto;padding:5px 11px;font-size:10px;margin-top:0;letter-spacing:1px" onclick="addTrecho()">+ Trecho</button>
+      </div>
+    </div>
+
+    <div class="stitle" id="circ-stitle">Circuito — Trecho A</div>
+    <div class="ctrl">
+      <div class="fld"><label class="lbl">Identificação</label>
+        <input type="text" id="c-name" placeholder="Alimentador, QGBT-Q1, Motor…"/>
+      </div>
+      <div class="row3">
+        <div><label class="lbl">Seção mm²</label>
+          <select id="c-sec">
+            <option>1.5</option><option value="2.5" selected>2.5</option><option>4</option><option>6</option>
+            <option>10</option><option>16</option><option>25</option><option>35</option><option>50</option>
+            <option>70</option><option>95</option><option>120</option><option>150</option>
+            <option>185</option><option>240</option><option>300</option>
+          </select>
+        </div>
+        <div><label class="lbl">Config.</label>
+          <select id="c-cfg" onchange="updateCfgInfo()">
+            <option value="1F">1F</option><option value="FN">F+N</option>
+            <option value="FNT" selected>F+N+T</option><option value="3F">3F</option>
+            <option value="3FT">3F+T</option><option value="3FN">3F+N</option>
+            <option value="3FNT">3F+N+T</option>
+          </select>
+        </div>
+        <div><label class="lbl">Qtd.</label>
+          <input type="number" id="c-qty" value="1" min="1" max="50"/>
+        </div>
+      </div>
+      <button class="add-btn" onclick="addCircuit()">+ Adicionar Circuito</button>
+      <div id="cfg-info" style="display:none;margin-top:5px;background:rgba(63,158,162,.07);border:1px solid rgba(63,158,162,.22);border-radius:4px;padding:4px 7px;font-family:var(--mono);font-size:8px;color:var(--teal);line-height:1.5"></div>
+    </div>
+
+    <div class="stitle" id="list-stitle">Circuitos — Trecho A</div>
+    <div class="circuit-list" id="circuit-list">
+      <div class="empty-state"><div class="empty-ico">⚡</div>Nenhum circuito.</div>
+    </div>
+  </div>
+
+  <!-- MID COL: Canvas -->
+  <div class="col-mid">
+    <div class="canvas-area">
+      <div class="canvas-header">
+        <div class="canvas-title-txt" id="canvas-title">Seção Transversal — Trecho A</div>
+        <div class="exp-row">
+          <button class="exp-btn" onclick="exportPNG()">↓ PNG</button>
+          <button class="exp-btn prim" onclick="exportPDF()">↓ PDF Detalhes</button>
+          <button class="exp-btn amber" onclick="showPage('details')">🖼 Detalhes HD</button>
+        </div>
+      </div>
+      <div class="cv-shell">
+        <canvas id="cv"></canvas>
+        <div class="cv-ph" id="cv-ph"><div class="pi">⊠</div><div>Adicione circuitos para visualizar o arranjo</div></div>
+      </div>
+      <div class="legend" id="legend"></div>
+    </div>
+  </div>
+
+  <!-- RIGHT COL: Stats + Sizes -->
+  <div class="col-right">
+    <div class="stitle">Resumo do Trecho</div>
+    <div class="stat-grid">
+      <div class="stat-card"><div class="stat-lbl">Cabos</div><div class="stat-val" id="s-cables" style="color:var(--teal)">0</div><div class="stat-unit">condutores</div></div>
+      <div class="stat-card"><div class="stat-lbl">Área Cabos</div><div class="stat-val" id="s-area">0</div><div class="stat-unit">mm²</div></div>
+      <div class="stat-card"><div class="stat-lbl">Seção Total</div><div class="stat-val" id="s-total">0</div><div class="stat-unit">mm²</div></div>
+      <div class="stat-card"><div class="stat-lbl">Limite Útil</div><div class="stat-val" id="s-useful" style="color:var(--green)">0</div><div class="stat-unit">mm²</div></div>
+    </div>
+
+    <div class="gf-card" id="gf-card">
+      <div class="stat-lbl" style="margin-bottom:4px">Fator Agrupamento — NBR 5410 Tab. 42</div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <span id="gf-val" style="font-family:var(--cond);font-size:20px;font-weight:900;color:#8a6000">1,00</span>
+        <span id="gf-note" style="font-family:var(--mono);font-size:8px;color:var(--gray);flex:1;line-height:1.4"></span>
+      </div>
+    </div>
+
+    <div class="fill-card">
+      <div class="fill-head">
+        <div class="fill-title">Preenchimento</div>
+        <div class="fill-pct-lbl" id="fill-pct">0%</div>
+      </div>
+      <div class="fill-bar-wrap">
+        <span class="limit-tag" id="limit-tag">Limite 40%</span>
+        <div class="fill-bar-bg">
+          <div class="limit-line" id="limit-line" style="left:40%"></div>
+          <div class="fill-bar" id="fill-bar" style="width:0%"></div>
+        </div>
+      </div>
+      <div class="fill-note" id="fill-note">Adicione circuitos para calcular</div>
+    </div>
+
+    <div class="rec-section">
+      <div class="rec-title">▸ Tamanhos Disponíveis</div>
+      <div class="rec-grid" id="rec-grid"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════ DETAILS PAGE ══════════════════════════ -->
+<div class="page" id="pg-details">
+  <div class="det-topbar">
+    <span class="det-tbar-title" id="det-title">Detalhes HD — Todos os Trechos</span>
+    <div style="display:flex;gap:6px;align-items:center">
+      <label class="lbl" style="margin:0;white-space:nowrap">Escala visual:</label>
+      <select id="det-scale" onchange="renderDetails()" style="width:100px;padding:4px 6px">
+        <option value="auto" selected>Auto</option>
+        <option value="1">1:1 (real)</option>
+        <option value="2">×2</option>
+        <option value="4">×4</option>
+        <option value="8">×8</option>
+      </select>
+      <button class="exp-btn" onclick="exportDetailsPNG()">↓ PNG Alta Res.</button>
+      <button class="exp-btn prim" onclick="exportDetailsPDF()">↓ PDF A3</button>
+      <button class="exp-btn" onclick="exportDXF()" style="border-color:#e65100;color:#e65100">↓ DXF (CAD)</button>
+    </div>
+  </div>
+  <div class="det-content" id="det-content">
+    <!-- Generated by renderDetails() -->
+    <div style="padding:60px;text-align:center;color:var(--muted);font-family:var(--mono);font-size:11px">
+      Adicione circuitos no dimensionador
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════
+//  PAGE NAVIGATION
+// ═══════════════════════════════════════════════════════
+function showPage(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.h-navbtn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('pg-'+id).classList.add('active');
+  document.getElementById('nav-'+id).classList.add('active');
+  if(id==='details'){renderDetails();}
+  if(id==='designer'){setTimeout(()=>renderCanvas(),50);}
+}
+
+// ═══════════════════════════════════════════════════════
+//  DATA
+// ═══════════════════════════════════════════════════════
+const DIAM={
+  PVC: {1.5:7.0,2.5:8.0,4:9.2,6:10.2,10:11.8,16:13.8,25:16.2,35:18.8,50:21.5,70:24.5,95:28.0,120:31.2,150:34.5,185:38.0,240:43.0,300:47.5},
+  XLPE:{1.5:6.2,2.5:7.2,4:8.2,6:9.2,10:10.8,16:12.8,25:15.2,35:17.8,50:20.5,70:23.5,95:27.0,120:30.0,150:33.0,185:36.5,240:41.5,300:46.0}
+};
+const COND_DIAM={1.5:1.5,2.5:1.8,4:2.3,6:2.9,10:3.7,16:4.6,25:5.8,35:6.9,50:8.1,70:9.6,95:11.1,120:12.5,150:14.0,185:15.6,240:17.7,300:19.8};
+const GFT={1:1.00,2:0.80,3:0.70,4:0.65,5:0.60,6:0.57,7:0.54,8:0.52,9:0.50,10:0.48,12:0.45,14:0.43,16:0.41,20:0.38};
+function getGF(n){const ks=Object.keys(GFT).map(Number).sort((a,b)=>a-b);for(let i=ks.length-1;i>=0;i--)if(n>=ks[i])return GFT[ks[i]];return 1;}
+const NOMINALS=[1.5,2.5,4,6,10,16,25,35,50,70,95,120,150,185,240,300];
+function peSection(s){if(s<=35)return s;const h=s/2;return NOMINALS.find(n=>n>=h)||95;}
+const COND_CFG={'1F':['F'],'FN':['F','N'],'FNT':['F','N','T'],'3F':['F','F','F'],'3FT':['F','F','F','T'],'3FN':['F','F','F','N'],'3FNT':['F','F','F','N','T']};
+const CFG_LABELS={'1F':'1F','FN':'F+N','FNT':'F+N+T','3F':'3F','3FT':'3F+T','3FN':'3F+N','3FNT':'3F+N+T'};
+const CFG_HAS_PE={'3FT':true,'3FNT':true,'FNT':false,'FN':false,'1F':false,'3F':false,'3FN':false};
+const CC={F:{fill:'#1a1a1a',hi:'rgba(140,140,140,0.55)',txt:'rgba(245,215,145,0.95)'},N:{fill:'#0c3cbe',hi:'rgba(70,130,255,0.45)',txt:'rgba(188,215,255,0.95)'},T:{fill:'#0b6b1c',hi:'rgba(45,185,75,0.45)',txt:'rgba(165,250,180,0.95)'}};
+const RINGS=['rgb(250,179,39)','rgb(63,158,162)','#e53935','#8e24aa','#e65100','#00897b','#1565c0','#6d4c41','#c0ca33','#f06292','#00acc1','#558b2f'];
+const LEITO_SZ=[[50,50],[75,50],[100,50],[150,50],[200,50],[300,50],[400,50],[500,50],[600,50],[750,50],[900,50],[1000,50],[1200,50],[1250,50],[100,75],[150,75],[200,75],[300,75],[400,75],[500,75],[600,75],[750,75],[900,75],[1000,75],[1200,75],[1250,75],[100,100],[150,100],[200,100],[300,100],[400,100],[500,100],[600,100],[750,100],[900,100],[1000,100],[1200,100],[1250,100],[200,150],[300,150],[400,150],[500,150],[600,150],[750,150],[900,150],[1000,150],[1200,150],[1250,150]];
+const CALHA_SZ=[[50,40],[75,40],[100,40],[150,40],[200,40],[300,40],[100,50],[150,50],[200,50],[300,50],[400,50],[500,50],[600,50],[750,50],[900,50],[1000,50],[100,60],[150,60],[200,60],[300,60],[400,60],[500,60],[600,60],[750,60],[900,60],[1000,60],[1200,60],[1250,60],[200,75],[300,75],[400,75],[500,75],[600,75],[750,75],[900,75],[1000,75],[1200,75],[1250,75],[300,100],[400,100],[500,100],[600,100],[750,100],[900,100],[1000,100],[1200,100],[1250,100]];
+const COND_SZ=[{l:'DN 16 / ½″',d:15.1},{l:'DN 20 / ¾″',d:19.3},{l:'DN 25 / 1″',d:24.1},{l:'DN 32 / 1¼″',d:30.8},{l:'DN 40 / 1½″',d:38.4},{l:'DN 50 / 2″',d:48.9},{l:'DN 63 / 2½″',d:60.8},{l:'DN 75 / 3″',d:73.0},{l:'DN 100 / 4″',d:96.0}];
+const LETTERS='ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+
+// ═══════════════════════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════════════════════
+let S={type:'leito',trayW:300,trayH:100,conduitD:24.1,cableType:'XLPE',arrMode:'trefoil',spacing:false,trechos:[{id:'A',name:'Trecho A',circuits:[],nid:1}],active:'A'};
+const getAT=()=>S.trechos.find(t=>t.id===S.active)||S.trechos[0];
+const getDiam=s=>DIAM[S.cableType][s]||10;
+const getCondDiam=s=>COND_DIAM[s]||2*Math.sqrt((s||1)/Math.PI)*1.13;
+const getTrayArea=()=>S.type==='eletroduto'?Math.PI*(S.conduitD/2)**2:S.trayW*S.trayH;
+const getMaxFill=()=>{if(S.type==='eletroduto'){const n=totalCables();return n===1?0.53:n===2?0.31:0.40;}return 0.40;};
+function getCfgTypes(cfg,sec){const raw=COND_CFG[cfg]||['F'];return raw.map(t=>({type:t,section:t==='T'?peSection(sec):sec}));}
+function totalCables(){return getAT().circuits.reduce((s,c)=>s+getCfgTypes(c.cfg,c.section).length*c.qty,0);}
+function numCircuitGroups(){return getAT().circuits.reduce((s,c)=>s+c.qty,0);}
+function totalCableArea(){return getAT().circuits.reduce((s,c)=>{const t=getCfgTypes(c.cfg,c.section);return s+t.reduce((ts,cd)=>{const r=getDiam(cd.section)/2;return ts+Math.PI*r*r;},0)*c.qty;},0);}
+function fillPct(){const a=getTrayArea();return a?totalCableArea()/a*100:0;}
+function wallMM(){if(S.type==='eletroduto')return Math.max(1.5,S.conduitD*0.05);return Math.min(8,Math.max(2,S.trayW*0.025));}
+
+// ═══════════════════════════════════════════════════════
+//  ACTIONS
+// ═══════════════════════════════════════════════════════
+function setType(t){
+  S.type=t;
+  ['leito','calha','eletroduto'].forEach(x=>document.getElementById('tab-'+x).classList.toggle('active',x===t));
+  document.getElementById('leito-fields').style.display=t!=='eletroduto'?'':'none';
+  document.getElementById('eletroduto-fields').style.display=t==='eletroduto'?'':'none';
+  document.getElementById('spacing-row').style.display=t==='eletroduto'?'none':'';
+  if(t==='eletroduto'){S.spacing=false;document.getElementById('spacing-chk').checked=false;}
+  if(t==='calha'&&S.trayW>1250)S.trayW=600;
+  updateTray();
+}
+function updateTray(){
+  S.cableType=document.getElementById('cable-type').value;
+  S.arrMode=document.getElementById('arr-mode').value;
+  S.spacing=document.getElementById('spacing-chk').checked;
+  if(S.type==='eletroduto')S.conduitD=parseFloat(document.getElementById('conduit-size').value);
+  else{
+    const wv=document.getElementById('tray-width').value,hv=document.getElementById('tray-height').value;
+    document.getElementById('custom-dims').style.display=(wv==='custom'||hv==='custom')?'':'none';
+    S.trayW=wv==='custom'?parseFloat(document.getElementById('cw').value)||300:parseFloat(wv);
+    S.trayH=hv==='custom'?parseFloat(document.getElementById('ch').value)||100:parseFloat(hv);
+  }
+  render();
+}
+function updateCfgInfo(){
+  const cfg=document.getElementById('c-cfg').value,sec=parseFloat(document.getElementById('c-sec').value)||2.5,el=document.getElementById('cfg-info');
+  if(CFG_HAS_PE[cfg]&&sec>35){el.style.display='';el.innerHTML=`⚡ Terra (PE): ${peSection(sec)} mm² — NBR 5410 (S_PE=S_fase/2 para S>35mm²)`;}
+  else el.style.display='none';
+}
+function addTrecho(){
+  const used=S.trechos.map(t=>t.id);const letter=LETTERS.find(l=>!used.includes(l));
+  if(!letter){alert('Máximo atingido.');return;}
+  const name=document.getElementById('trecho-name').value.trim()||`Trecho ${letter}`;
+  S.trechos.push({id:letter,name,circuits:[],nid:1});S.active=letter;
+  document.getElementById('trecho-name').value='';render();
+}
+function removeTrecho(id){
+  if(S.trechos.length===1){alert('Precisa de pelo menos 1 trecho.');return;}
+  S.trechos=S.trechos.filter(t=>t.id!==id);if(S.active===id)S.active=S.trechos[0].id;render();
+}
+function selectTrecho(id){S.active=id;render();}
+function addCircuit(){
+  const at=getAT();const name=document.getElementById('c-name').value.trim()||`Circuito ${at.nid}`;
+  const section=parseFloat(document.getElementById('c-sec').value);const cfg=document.getElementById('c-cfg').value;
+  const qty=Math.max(1,parseInt(document.getElementById('c-qty').value)||1);
+  at.circuits.push({id:at.nid++,name,section,cfg,qty,ring:RINGS[at.circuits.length%RINGS.length]});
+  document.getElementById('c-name').value='';render();
+}
+function removeCircuit(id){getAT().circuits=getAT().circuits.filter(c=>c.id!==id);render();}
+function selSize(w,h){S.trayW=w;S.trayH=h;[...document.getElementById('tray-width').options].forEach(o=>o.selected=(o.value==w));[...document.getElementById('tray-height').options].forEach(o=>o.selected=(o.value==h));render();}
+function selConduit(d){S.conduitD=d;document.getElementById('conduit-size').value=d;render();}
+
+// ═══════════════════════════════════════════════════════
+//  PACKING
+// ═══════════════════════════════════════════════════════
+function buildGroupGeom(cfg,section){
+  const conductors=getCfgTypes(cfg,section),d=getDiam(section),r=d/2,n=conductors.length;
+  if(S.arrMode==='trefoil'){
+    if(n===1)return[{lx:r,ly:r,...conductors[0]}];
+    if(n===2)return[{lx:r,ly:r,...conductors[0]},{lx:r*3,ly:r,...conductors[1]}];
+    if(n===3)return[{lx:r,ly:r,...conductors[0]},{lx:r*3,ly:r,...conductors[1]},{lx:r*2,ly:r+r*Math.sqrt(3),...conductors[2]}];
+    if(n===4)return[{lx:r,ly:r,...conductors[0]},{lx:r*3,ly:r,...conductors[1]},{lx:r*5,ly:r,...conductors[2]},{lx:r*3,ly:r+r*Math.sqrt(3),...conductors[3]}];
+    if(n===5)return[{lx:r,ly:r,...conductors[0]},{lx:r*3,ly:r,...conductors[1]},{lx:r*5,ly:r,...conductors[2]},{lx:r*2,ly:r+r*Math.sqrt(3),...conductors[3]},{lx:r*4,ly:r+r*Math.sqrt(3),...conductors[4]}];
+  }
+  return conductors.map((c,i)=>({lx:r+i*(d+1.5),ly:r,...c}));
+}
+function groupBounds(geom,d){const r=d/2;if(!geom.length)return{w:d,h:d};return{w:Math.max(...geom.map(p=>p.lx))+r,h:Math.max(...geom.map(p=>p.ly))+r};}
+
+function packConduit(flatCables,innerR){
+  if(!flatCables.length)return[];
+  const sorted=[...flatCables].sort((a,b)=>b.r-a.r);
+  const placed=[];
+  function lowestY(cx,r){
+    const cR=innerR-r;if(Math.abs(cx)>cR+0.05)return null;
+    const condB=-Math.sqrt(Math.max(0,cR*cR-cx*cx));let cy=condB;
+    for(const p of placed){const dx=cx-p.cx,mD=r+p.r;if(Math.abs(dx)<mD){const dy=Math.sqrt(Math.max(0,mD*mD-dx*dx));cy=Math.max(cy,p.cy+dy);}}
+    if(Math.sqrt(cx*cx+cy*cy)+r>innerR+0.08)return null;return cy;
+  }
+  for(const cable of sorted){
+    const r=cable.r,cR=innerR-r;if(cR<0){placed.push({...cable,cx:0,cy:0});continue;}
+    let bX=null,bY=Infinity;
+    for(let i=0;i<=120;i++){const cx=-cR+i*2*cR/120,cy=lowestY(cx,r);if(cy===null)continue;if(cy<bY-0.005||(Math.abs(cy-bY)<0.005&&Math.abs(cx)<Math.abs(bX??1e9))){bY=cy;bX=cx;}}
+    placed.push({...cable,cx:bX??0,cy:bY<Infinity?bY:0});
+  }
+  return placed;
+}
+
+function packTrecho(trecho){
+  if(S.type==='eletroduto'){
+    const WMM=wallMM(),innerR=S.conduitD/2-WMM;
+    const flat=[];
+    trecho.circuits.forEach(c=>{
+      const cond=getCfgTypes(c.cfg,c.section);
+      for(let q=0;q<c.qty;q++) cond.forEach((cd,ti)=>flat.push({r:getDiam(cd.section)/2,type:cd.type,section:cd.section,ring:c.ring,circuit:c,gi:trecho.circuits.indexOf(c)*50+q}));
+    });
+    const packed=packConduit(flat,innerR);
+    const maxD=packed.reduce((m,c)=>Math.max(m,Math.sqrt(c.cx**2+c.cy**2)+c.r),0);
+    return{cables:packed,spacingWarn:false,overflowW:maxD>innerR+0.5,overflowH:false,isConduit:true,innerR};
+  }
+  const tW=S.trayW,WMM=wallMM(),PAD=WMM+1.5,usableW=tW-PAD*2;
+  const groups=[];
+  trecho.circuits.forEach(c=>{
+    const d=getDiam(c.section),r=d/2;
+    for(let q=0;q<c.qty;q++){const geom=buildGroupGeom(c.cfg,c.section);groups.push({geom,bounds:groupBounds(geom,d),d,r,section:c.section,ring:c.ring,circuit:c});}
+  });
+  if(!groups.length)return{cables:[],spacingWarn:false,overflowW:false,overflowH:false,isConduit:false};
+  const n=groups.length,maxD=groups.reduce((m,g)=>Math.max(m,g.d),0);
+  const totalGroupW=groups.reduce((s,g)=>s+g.bounds.w,0),totalGapsW=(n-1)*1.5;
+  let xStarts=[],spacingWarn=false;
+  if(S.spacing){
+    if(n===1){
+      // Single group: centre in tray
+      xStarts.push(PAD+(usableW-groups[0].bounds.w)/2);
+    } else {
+      // Per-pair gap = diameter of the largest cable between the two adjacent groups
+      // NBR 5410: distância livre = diâmetro do maior cabo entre os dois circuitos adjacentes
+      const gaps=[];
+      for(let i=0;i<n-1;i++){
+        const dA=groups[i].d,dB=groups[i+1].d;
+        gaps.push(Math.max(dA,dB)); // free distance = Ø of largest adjacent cable
+      }
+      const minTotalW=totalGroupW+gaps.reduce((s,g)=>s+g,0);
+      if(minTotalW<=usableW){
+        // Fits: apply exact per-pair spacing, centred in tray
+        const extra=usableW-minTotalW;
+        const extraPerGap=extra/(n-1);
+        let x=PAD;
+        groups.forEach((g,i)=>{
+          xStarts.push(x);
+          x+=g.bounds.w+(i<n-1?gaps[i]+extraPerGap:0);
+        });
+      } else {
+        // Doesn't fit: fall back to tight pack + warn
+        spacingWarn=true;
+        const tW2=totalGroupW+totalGapsW;
+        let x=PAD+Math.max(0,(usableW-tW2)/2);
+        groups.forEach(g=>{xStarts.push(x);x+=g.bounds.w+1.5;});
+      }
+    }
+  } else {
+    const tW2=totalGroupW+totalGapsW;
+    let x=PAD+Math.max(0,(usableW-tW2)/2);
+    groups.forEach(g=>{xStarts.push(x);x+=g.bounds.w+1.5;});
+  }
+  const cables=[];
+  groups.forEach((g,gi)=>g.geom.forEach(p=>cables.push({x:xStarts[gi]+p.lx,y:PAD+p.ly,r:getDiam(p.section)/2,type:p.type,section:p.section,ring:g.ring,circuit:g.circuit,gi})));
+  const maxR=cables.reduce((m,c)=>Math.max(m,c.x+c.r),0),maxT=cables.reduce((m,c)=>Math.max(m,c.y+c.r),0);
+  return{cables,spacingWarn,overflowW:maxR>tW-WMM,overflowH:maxT>S.trayH-WMM,isConduit:false};
+}
+
+// ═══════════════════════════════════════════════════════
+//  RENDER UI
+// ═══════════════════════════════════════════════════════
+function render(){
+  renderTrechoTabs();renderStats();renderCircuitList();renderCanvas();renderLegend();renderRecommended();renderChips();
+  const at=getAT(),lbl=at.name||`Trecho ${at.id}`;
+  document.getElementById('canvas-title').textContent=`Seção Transversal — ${lbl}`;
+  document.getElementById('circ-stitle').textContent=`Circuito — ${lbl}`;
+  document.getElementById('list-stitle').textContent=`Circuitos — ${lbl}`;
+}
+function renderTrechoTabs(){
+  const el=document.getElementById('trecho-tabs');
+  el.innerHTML=S.trechos.map(t=>{
+    const cArea=t.circuits.reduce((s,c)=>{const cs=getCfgTypes(c.cfg,c.section);return s+cs.reduce((ts,cd)=>{const r=getDiam(cd.section)/2;return ts+Math.PI*r*r;},0)*c.qty;},0);
+    const pct=getTrayArea()?cArea/getTrayArea()*100:0;
+    const clr=pct>getMaxFill()*100?'#dc2626':pct>getMaxFill()*80?'#8a6000':'rgb(63,158,162)';
+    const act=t.id===S.active?'active':'';
+    return `<div class="trecho-tab ${act}" onclick="selectTrecho('${t.id}')">
+      <span class="tl">${t.id}</span><span class="tfill" style="color:${clr}">${pct.toFixed(0)}%</span>
+      ${S.trechos.length>1?`<span class="del-tr" onclick="event.stopPropagation();removeTrecho('${t.id}')">✕</span>`:''}
+    </div>`;
+  }).join('')+`<div style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border:1.5px dashed var(--light);border-radius:50%;cursor:pointer;font-size:16px;color:var(--muted);transition:all .15s" onmouseenter="this.style.borderColor='var(--amber)';this.style.color='var(--amber)'" onmouseleave="this.style.borderColor='var(--light)';this.style.color='var(--muted)'" onclick="document.getElementById('trecho-name').focus()">+</div>`;
+}
+function renderStats(){
+  const c=totalCables(),ca=totalCableArea(),ta=getTrayArea(),mf=getMaxFill(),fp=fillPct();
+  const clr=fp>mf*100?'var(--red)':fp>mf*80?'#8a6000':'var(--teal)';
+  document.getElementById('s-cables').textContent=c;document.getElementById('s-area').textContent=ca.toFixed(0);
+  document.getElementById('s-total').textContent=ta.toFixed(0);document.getElementById('s-useful').textContent=(ta*mf).toFixed(0);
+  const pEl=document.getElementById('fill-pct'),bEl=document.getElementById('fill-bar');
+  pEl.textContent=fp.toFixed(1)+'%';pEl.style.color=clr;bEl.style.width=Math.min(fp,100)+'%';
+  bEl.style.background=fp>mf*100?'var(--red)':fp>mf*80?'var(--amber)':'var(--teal)';
+  document.getElementById('limit-line').style.left=mf*100+'%';document.getElementById('limit-tag').style.left=mf*100+'%';
+  document.getElementById('limit-tag').textContent=`Limite ${(mf*100).toFixed(0)}%`;
+  const no=document.getElementById('fill-note');
+  no.textContent=S.type==='eletroduto'?`NBR 5410 §6.2.6 — ${c===0?'—':c===1?'lim. 53%':c===2?'lim. 31%':'lim. 40%'} | Ø ${S.conduitD}mm`:`NBR 5410 — ${S.type==='leito'?'Leito':'Calha'}: máx. ${(mf*100).toFixed(0)}% (${(ta*mf).toFixed(0)}/${ta.toFixed(0)} mm²)`;
+  const gc=document.getElementById('gf-card');
+  if(c>0&&S.type!=='eletroduto'){
+    gc.style.display='';const ng=numCircuitGroups();const{spacingWarn}=packTrecho(getAT());const gf=(S.spacing&&!spacingWarn)?1.00:getGF(ng);
+    document.getElementById('gf-val').textContent=gf.toFixed(2).replace('.',',');
+    document.getElementById('gf-note').textContent=(S.spacing&&!spacingWarn)?`Afastamento livre ≥ Ø do maior cabo entre cada par de circuitos → fg = 1,00 (NBR 5410 Tab. 52J)`:`${ng} circuito(s) agrupados → fg = ${gf.toFixed(2)}. Aplicar na corrente de projeto. (NBR 5410 Tab. 42).`;
+  } else gc.style.display='none';
+}
+function renderChips(){
+  const el=document.getElementById('tray-chips'),ta=getTrayArea(),mf=getMaxFill();
+  const{spacingWarn}=packTrecho(getAT());let html='';
+  if(S.type==='eletroduto')html=`<span class="chip">Ø ${S.conduitD}mm</span><span class="chip">A=${ta.toFixed(1)}mm²</span><span class="chip amber">Útil ${(ta*mf).toFixed(1)}mm²</span>`;
+  else html=`<span class="chip">${S.trayW}×${S.trayH}mm</span><span class="chip">A=${ta.toFixed(0)}mm²</span><span class="chip amber">Útil ${(ta*0.4).toFixed(0)}mm²</span>`;
+  if(S.spacing&&spacingWarn)html+=`<span class="chip red">⚠ Afastamento entre circuitos impossível — leito insuficiente</span>`;
+  el.innerHTML=html;
+}
+function renderCircuitList(){
+  const el=document.getElementById('circuit-list'),at=getAT();
+  if(!at.circuits.length){el.innerHTML='<div class="empty-state"><div class="empty-ico">⚡</div>Nenhum circuito.</div>';return;}
+  el.innerHTML=at.circuits.map(c=>{
+    const cond=getCfgTypes(c.cfg,c.section),tc=cond.length*c.qty;
+    const ta=cond.reduce((s,cd)=>{const r=getDiam(cd.section)/2;return s+Math.PI*r*r;},0)*c.qty;
+    const pe=CFG_HAS_PE[c.cfg]&&c.section>35?` PE:${peSection(c.section)}mm²`:'';
+    return `<div class="c-item"><div class="c-ring" style="background:${c.ring}"></div>
+      <div class="c-info"><div class="c-name">${c.name}</div>
+      <div class="c-detail">${c.qty}× · ${CFG_LABELS[c.cfg]} · ${c.section}mm² ${S.cableType}${pe}</div></div>
+      <div class="c-area">${ta.toFixed(1)}mm²<br/><span style="font-size:7px">${tc}cab</span></div>
+      <button class="del-btn" onclick="removeCircuit(${c.id})">✕</button></div>`;
+  }).join('');
+}
+function renderLegend(){
+  const el=document.getElementById('legend'),at=getAT();
+  if(!at.circuits.length){el.innerHTML='';return;}
+  const usedT=new Set(at.circuits.flatMap(c=>getCfgTypes(c.cfg,c.section).map(x=>x.type)));
+  let html=[{t:'F',l:'Fase',fill:'#1a1a1a'},{t:'N',l:'Neutro',fill:'#0c3cbe'},{t:'T',l:'Terra',fill:'#0b6b1c'}].filter(x=>usedT.has(x.t)).map(x=>`<div class="leg-item"><div class="leg-dot" style="background:${x.fill}"></div><span>${x.l}</span></div>`).join('');
+  html+='<span style="color:var(--light);padding:0 4px;font-size:9px">·</span>';
+  at.circuits.slice(0,6).forEach(c=>{html+=`<div class="leg-item"><div class="leg-dot" style="background:${c.ring};border-color:${c.ring}"></div><span>${c.name}</span></div>`;});
+  el.innerHTML=html;
+}
+function renderRecommended(){
+  const el=document.getElementById('rec-grid'),ca=totalCableArea(),mf=getMaxFill();
+  if(S.type==='eletroduto'){el.innerHTML=COND_SZ.map(cs=>{const a=Math.PI*(cs.d/2)**2,f=ca/a*100,cls=f>100?'over':f>mf*100?'warn':'ok',sel=cs.d===S.conduitD?'selected':'';return `<div class="rec-item ${cls} ${sel}" onclick="selConduit(${cs.d})"><div class="rec-sz">${cs.l}</div><div class="rec-fill">→${f.toFixed(1)}%</div></div>`;}).join('');return;}
+  const sz=S.type==='leito'?LEITO_SZ:CALHA_SZ;
+  el.innerHTML=sz.map(([w,h])=>{const a=w*h,f=ca/a*100,cls=f>100?'over':f>mf*100?'warn':'ok',sel=(w===S.trayW&&h===S.trayH)?'selected':'';return `<div class="rec-item ${cls} ${sel}" onclick="selSize(${w},${h})"><div class="rec-sz">${w}×${h}</div><div class="rec-fill">${f.toFixed(1)}%</div></div>`;}).join('');
+}
+
+// ═══════════════════════════════════════════════════════
+//  CANVAS
+// ═══════════════════════════════════════════════════════
+function renderCanvas(){
+  const cv=document.getElementById('cv'),ph=document.getElementById('cv-ph'),at=getAT();
+  if(!at.circuits.length){const ctx=cv.getContext('2d');ctx.clearRect(0,0,cv.width||1,cv.height||1);ph.style.display='';return;}
+  ph.style.display='none';
+  const wrap=cv.parentElement,W=wrap.clientWidth||900,H=wrap.clientHeight||480;
+  const dpr=window.devicePixelRatio||1;
+  cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);cv.style.width=W+'px';cv.style.height=H+'px';
+  const ctx=cv.getContext('2d');ctx.scale(dpr,dpr);
+  drawSection(ctx,W,H,at,{bg:'#f5f7fa',compact:false});
+}
+
+// ── Section drawing (canvas) ──
+function drawSection(ctx,CW,CH,trecho,opts={}){
+  const{bg='#f5f7fa',compact=false}=opts;
+  const tW=S.type==='eletroduto'?S.conduitD:S.trayW,tH=S.type==='eletroduto'?S.conduitD:S.trayH;
+  const isRound=S.type==='eletroduto',WMM=wallMM();
+  const COTA_L=58,COTA_R=16,LABEL_TOP=compact?24:36,MT=compact?10:16,MB_COTA=compact?20:26,MB_TITLE=compact?44:58;
+  const availW=CW-COTA_L-COTA_R,availH=CH-MT-LABEL_TOP-MB_COTA-MB_TITLE;
+  const result=packTrecho(trecho);const{cables,spacingWarn,overflowW,overflowH,isConduit}=result;
+  let SC=Math.min(availW/tW,availH/tH);
+  if(cables.length){const minR=cables.reduce((m,c)=>Math.min(m,c.r),Infinity);if(minR*SC<7)SC=Math.min(SC,7/minR);}
+  const fW=tW*SC,fH=tH*SC,ox=COTA_L+(availW-fW)/2,oy=MT+LABEL_TOP+(availH-fH)/2,WALL=WMM*SC;
+  // Background
+  ctx.fillStyle=bg;ctx.fillRect(0,0,CW,CH);
+  // Grid
+  ctx.save();ctx.strokeStyle='rgba(63,158,162,0.07)';ctx.lineWidth=0.6;
+  const GS=compact?30:38;for(let gx=0;gx<CW;gx+=GS){ctx.beginPath();ctx.moveTo(gx,0);ctx.lineTo(gx,CH);ctx.stroke();}for(let gy=0;gy<CH;gy+=GS){ctx.beginPath();ctx.moveTo(0,gy);ctx.lineTo(CW,gy);ctx.stroke();}ctx.restore();
+  // Paper shadow
+  if(!compact){ctx.save();ctx.shadowColor='rgba(0,0,0,0.1)';ctx.shadowBlur=16;ctx.shadowOffsetX=2;ctx.shadowOffsetY=4;ctx.fillStyle='#fff';ctx.fillRect(COTA_L-8,MT-8,CW-COTA_L+6,CH-MT-MB_TITLE+6);ctx.restore();ctx.fillStyle='#fff';ctx.fillRect(COTA_L-8,MT-8,CW-COTA_L+6,CH-MT-MB_TITLE+6);}
+  drawTrayFill(ctx,ox,oy,fW,fH,WALL,isRound);
+  const{clipX,clipY,clipW,clipH}=getInnerClip(ox,oy,fW,fH,WALL);
+  ctx.save();ctx.beginPath();
+  if(isRound)ctx.arc(ox+fW/2,oy+fH/2,fW/2-WALL,0,Math.PI*2);
+  else ctx.rect(clipX,clipY,clipW,clipH);
+  ctx.clip();
+  if(isConduit){const ccx=ox+fW/2,ccy=oy+fH/2;cables.forEach(cab=>{const cpx=ccx+cab.cx*SC,cpy=ccy-cab.cy*SC,rp=cab.r*SC;if(rp>0.5)drawCable(ctx,cpx,cpy,rp,cab.type,cab.section,cab.ring,compact);});}
+  else{cables.forEach(cab=>{const cx=ox+cab.x*SC,cy=oy+fH-cab.y*SC,rp=cab.r*SC;if(rp>0.5)drawCable(ctx,cx,cy,rp,cab.type,cab.section,cab.ring,compact);});}
+  ctx.restore();
+  drawTrayOutline(ctx,ox,oy,fW,fH,WALL,isRound);
+  if(isConduit)drawConduitLabels(ctx,cables,ox+fW/2,oy+fH/2,SC,result.innerR,oy);
+  else if(!compact)drawGroupLabels(ctx,cables,ox,oy,fH,SC);
+  else drawGroupLabelsCompact(ctx,cables,ox,oy,fH,SC);
+  if(S.spacing&&!spacingWarn&&cables.length>0&&!isConduit)drawSpacingIndicators(ctx,cables,ox,oy,fH,SC);
+  drawCotas(ctx,ox,oy,fW,fH,tW,tH,compact);
+  drawStatus(ctx,ox,oy,fW,fH,fillPct(),getMaxFill()*100,spacingWarn,overflowW||overflowH,compact);
+  drawTitleBlock(ctx,CW,CH,trecho,compact);
+}
+function getInnerClip(ox,oy,fW,fH,WALL){const isLeito=S.type==='leito';return{clipX:ox+WALL,clipY:isLeito?oy:oy+WALL,clipW:fW-WALL*2,clipH:isLeito?fH-WALL:fH-WALL*2};}
+function drawTrayFill(ctx,ox,oy,fW,fH,WALL,isRound){
+  const isLeito=S.type==='leito';
+  if(isRound){
+    ctx.save();ctx.shadowColor='rgba(0,0,0,0.22)';ctx.shadowBlur=14;ctx.shadowOffsetY=4;ctx.beginPath();ctx.arc(ox+fW/2,oy+fH/2,fW/2,0,Math.PI*2);ctx.fillStyle='#c8d4de';ctx.fill();ctx.restore();
+    const rg=ctx.createRadialGradient(ox+fW*0.35,oy+fH*0.28,0,ox+fW/2,oy+fH/2,fW/2);rg.addColorStop(0,'#e8f0f8');rg.addColorStop(0.55,'#c4d0dc');rg.addColorStop(1,'#8898a8');
+    ctx.beginPath();ctx.arc(ox+fW/2,oy+fH/2,fW/2,0,Math.PI*2);ctx.fillStyle=rg;ctx.fill();
+    const ig=ctx.createRadialGradient(ox+fW/2,oy+fH/2,0,ox+fW/2,oy+fH/2,fW/2-WALL);ig.addColorStop(0,'#fafcff');ig.addColorStop(1,'#f0f4f8');
+    ctx.beginPath();ctx.arc(ox+fW/2,oy+fH/2,fW/2-WALL,0,Math.PI*2);ctx.fillStyle=ig;ctx.fill();return;
+  }
+  ctx.save();ctx.shadowColor='rgba(0,0,0,0.16)';ctx.shadowBlur=16;ctx.shadowOffsetY=5;ctx.shadowOffsetX=2;ctx.fillStyle='#bcc8d4';
+  ctx.fillRect(ox,oy,WALL,fH);ctx.fillRect(ox+fW-WALL,oy,WALL,fH);ctx.fillRect(ox,oy+fH-WALL,fW,WALL);if(!isLeito)ctx.fillRect(ox,oy,fW,WALL);ctx.restore();
+  const mkG=(x1,y1,x2,y2)=>{const g=ctx.createLinearGradient(x1,y1,x2,y2);g.addColorStop(0,'#dce8f2');g.addColorStop(0.3,'#c8d4e0');g.addColorStop(0.7,'#aebece');g.addColorStop(1,'#8898a8');return g;};
+  ctx.fillStyle=mkG(ox,oy,ox+WALL,oy);ctx.fillRect(ox,oy,WALL,fH);ctx.fillStyle=mkG(ox+fW,oy,ox+fW-WALL,oy);ctx.fillRect(ox+fW-WALL,oy,WALL,fH);ctx.fillStyle=mkG(ox,oy+fH,ox,oy+fH-WALL);ctx.fillRect(ox,oy+fH-WALL,fW,WALL);if(!isLeito){ctx.fillStyle=mkG(ox,oy,ox,oy+WALL);ctx.fillRect(ox,oy,fW,WALL);}
+  ctx.save();ctx.strokeStyle='rgba(63,158,162,0.22)';ctx.lineWidth=0.8;hatchRect(ctx,ox,oy,WALL,fH);hatchRect(ctx,ox+fW-WALL,oy,WALL,fH);hatchRect(ctx,ox,oy+fH-WALL,fW,WALL);if(!isLeito)hatchRect(ctx,ox,oy,fW,WALL);ctx.restore();
+  const{clipX,clipY,clipW,clipH}=getInnerClip(ox,oy,fW,fH,WALL);const iG=ctx.createLinearGradient(clipX,clipY,clipX,clipY+clipH);iG.addColorStop(0,'#fafcff');iG.addColorStop(1,'#eef2f7');ctx.fillStyle=iG;ctx.fillRect(clipX,clipY,clipW,clipH);
+}
+function drawTrayOutline(ctx,ox,oy,fW,fH,WALL,isRound){
+  const TEAL='rgb(63,158,162)',isLeito=S.type==='leito';ctx.strokeStyle=TEAL;
+  if(isRound){
+    ctx.lineWidth=2.5;ctx.beginPath();ctx.arc(ox+fW/2,oy+fH/2,fW/2,0,Math.PI*2);ctx.stroke();
+    ctx.lineWidth=1;ctx.beginPath();ctx.arc(ox+fW/2,oy+fH/2,fW/2-WALL,0,Math.PI*2);ctx.stroke();
+    ctx.save();ctx.beginPath();ctx.arc(ox+fW/2,oy+fH/2,fW/2-WALL*0.5,Math.PI*1.1,Math.PI*1.7);ctx.strokeStyle='rgba(255,255,255,0.45)';ctx.lineWidth=WALL*0.4;ctx.stroke();ctx.restore();return;
+  }
+  ctx.lineWidth=2.2;if(isLeito){ctx.beginPath();ctx.moveTo(ox,oy);ctx.lineTo(ox,oy+fH);ctx.lineTo(ox+fW,oy+fH);ctx.lineTo(ox+fW,oy);ctx.stroke();}else ctx.strokeRect(ox,oy,fW,fH);
+  ctx.lineWidth=0.9;const{clipX,clipY,clipW,clipH}=getInnerClip(ox,oy,fW,fH,WALL);
+  if(isLeito){ctx.beginPath();ctx.moveTo(clipX,oy);ctx.lineTo(clipX,clipY+clipH);ctx.lineTo(clipX+clipW,clipY+clipH);ctx.lineTo(clipX+clipW,oy);ctx.stroke();}else ctx.strokeRect(clipX,clipY,clipW,clipH);
+  if(isLeito){const nR=Math.max(3,Math.round(fW/36));ctx.lineWidth=0.8;ctx.globalAlpha=0.45;for(let i=1;i<nR;i++){const rx=clipX+i*(clipW/nR);ctx.beginPath();ctx.moveTo(rx,oy+fH-WALL);ctx.lineTo(rx,oy+fH);ctx.stroke();}ctx.globalAlpha=1;}
+  ctx.save();ctx.strokeStyle='rgba(255,255,255,0.5)';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(ox+1,oy+1);ctx.lineTo(ox+1,oy+fH-2);ctx.stroke();ctx.beginPath();ctx.moveTo(ox+fW-1,oy+1);ctx.lineTo(ox+fW-1,oy+fH-2);ctx.stroke();ctx.restore();
+}
+function hatchRect(ctx,x,y,w,h){ctx.save();ctx.beginPath();ctx.rect(x,y,w,h);ctx.clip();const s=6;for(let i=-(h+w);i<w+h+w;i+=s){ctx.beginPath();ctx.moveTo(x+i,y);ctx.lineTo(x+i+h,y+h);ctx.stroke();}ctx.restore();}
+function drawCable(ctx,cx,cy,rp,type,section,ring,compact){
+  const cc=CC[type]||CC.F,fullD=getDiam(section),condD=getCondDiam(section),coreR=(condD/fullD)*rp,RING_W=Math.max(1.5,rp*0.11),insulR=rp-RING_W;
+  if(!compact&&rp>7){ctx.save();ctx.shadowColor='rgba(0,0,0,0.26)';ctx.shadowBlur=rp*0.55;ctx.shadowOffsetY=rp*0.14;ctx.beginPath();ctx.arc(cx,cy,rp,0,Math.PI*2);ctx.fillStyle='rgba(0,0,0,0.01)';ctx.fill();ctx.restore();}
+  const rg=ctx.createRadialGradient(cx-rp*0.25,cy-rp*0.25,0,cx,cy,rp);rg.addColorStop(0,lc(ring,45));rg.addColorStop(0.5,ring);rg.addColorStop(1,dc(ring,30));ctx.beginPath();ctx.arc(cx,cy,rp,0,Math.PI*2);ctx.fillStyle=rg;ctx.fill();
+  const ig=ctx.createRadialGradient(cx-insulR*0.3,cy-insulR*0.32,coreR*0.5,cx,cy,insulR);ig.addColorStop(0,lc(cc.fill,38));ig.addColorStop(0.4,cc.fill);ig.addColorStop(0.9,cc.fill);ig.addColorStop(1,dc(cc.fill,48));ctx.beginPath();ctx.arc(cx,cy,insulR,0,Math.PI*2);ctx.fillStyle=ig;ctx.fill();
+  if(insulR>5){const hg=ctx.createRadialGradient(cx-insulR*0.32,cy-insulR*0.36,0,cx,cy,insulR);hg.addColorStop(0,cc.hi);hg.addColorStop(0.55,'rgba(255,255,255,0)');ctx.beginPath();ctx.arc(cx,cy,insulR,0,Math.PI*2);ctx.fillStyle=hg;ctx.fill();}
+  if(coreR>1.5){
+    const nS=section<=10?1:section<=35?7:19;
+    const ds=(sx,sy,sr)=>{const sg=ctx.createRadialGradient(sx-sr*0.35,sy-sr*0.36,0,sx,sy,sr);sg.addColorStop(0,'#fff2a8');sg.addColorStop(0.35,'#e8a820');sg.addColorStop(0.75,'#c07818');sg.addColorStop(1,'#7a4c10');ctx.beginPath();ctx.arc(sx,sy,sr,0,Math.PI*2);ctx.fillStyle=sg;ctx.fill();if(sr>2){ctx.strokeStyle='rgba(0,0,0,0.18)';ctx.lineWidth=0.3;ctx.stroke();}};
+    if(nS===1||coreR<5)ds(cx,cy,coreR);
+    else if(nS===7){const sR=coreR*0.38,pR=coreR-sR;ds(cx,cy,sR);for(let i=0;i<6;i++){const a=i*Math.PI/3;ds(cx+pR*Math.cos(a),cy+pR*Math.sin(a),sR);}}
+    else{const sR=coreR*0.26;ds(cx,cy,sR);const p1=coreR-sR*2.1;for(let i=0;i<6;i++){const a=i*Math.PI/3;ds(cx+p1*Math.cos(a),cy+p1*Math.sin(a),sR);}const p2=coreR-sR*0.75;for(let i=0;i<12;i++){const a=i*Math.PI/6+Math.PI/12;ds(cx+p2*Math.cos(a),cy+p2*Math.sin(a),sR);}}
+  }
+  if(insulR>10){const sec=section>=1?String(Math.round(section)):section.toFixed(1);const fs=Math.min(compact?8:11,Math.max(compact?5:7,insulR*0.48));ctx.fillStyle=cc.txt;ctx.font=`bold ${fs}px 'JetBrains Mono',monospace`;ctx.textAlign='center';ctx.textBaseline='middle';ctx.shadowColor='rgba(0,0,0,0.55)';ctx.shadowBlur=2;ctx.fillText(sec,cx,cy);ctx.shadowBlur=0;}
+  ctx.beginPath();ctx.arc(cx,cy,rp,0,Math.PI*2);ctx.strokeStyle='rgba(0,0,0,0.18)';ctx.lineWidth=0.6;ctx.stroke();
+}
+function lc(h,a){if(!h||!h.startsWith('#'))return h||'#888';const r=parseInt(h.slice(1,3),16),g=parseInt(h.slice(3,5),16),b=parseInt(h.slice(5,7),16);return `rgb(${Math.min(255,r+a)},${Math.min(255,g+a)},${Math.min(255,b+a)})`;}
+function dc(h,a){if(!h||!h.startsWith('#'))return h||'#444';const r=parseInt(h.slice(1,3),16),g=parseInt(h.slice(3,5),16),b=parseInt(h.slice(5,7),16);return `rgb(${Math.max(0,r-a)},${Math.max(0,g-a)},${Math.max(0,b-a)})`;}
+function rr(ctx,x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.lineTo(x+w-r,y);ctx.quadraticCurveTo(x+w,y,x+w,y+r);ctx.lineTo(x+w,y+h-r);ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);ctx.lineTo(x+r,y+h);ctx.quadraticCurveTo(x,y+h,x,y+h-r);ctx.lineTo(x,y+r);ctx.quadraticCurveTo(x,y,x+r,y);ctx.closePath();}
+function drawGroupLabels(ctx,cables,ox,oy,fH,SC){
+  if(!cables.length)return;const grp={};cables.forEach(c=>{const k=c.gi;if(!grp[k])grp[k]={cables:[],circuit:c.circuit};grp[k].cables.push(c);});
+  Object.values(grp).forEach(g=>{
+    const xs=g.cables.map(c=>ox+c.x*SC);const cxM=(Math.min(...xs)+Math.max(...xs))/2;const cyT=Math.min(...g.cables.map(c=>oy+fH-c.y*SC-c.r*SC));
+    ctx.save();ctx.strokeStyle=g.circuit.ring;ctx.lineWidth=1;ctx.setLineDash([3,3]);ctx.beginPath();ctx.moveTo(cxM,cyT-2);ctx.lineTo(cxM,cyT-13);ctx.stroke();ctx.setLineDash([]);ctx.restore();
+    const txt=g.circuit.name;ctx.font=`bold 9.5px 'Barlow Condensed',sans-serif`;const tw=ctx.measureText(txt).width;const pw=tw+12,ph=15,px=cxM-pw/2,py=cyT-13-ph;
+    const pg=ctx.createLinearGradient(px,py,px,py+ph);pg.addColorStop(0,'rgba(255,255,255,0.98)');pg.addColorStop(1,'rgba(240,245,252,0.98)');ctx.fillStyle=pg;rr(ctx,px,py,pw,ph,5);ctx.fill();ctx.strokeStyle=g.circuit.ring;ctx.lineWidth=1.5;rr(ctx,px,py,pw,ph,5);ctx.stroke();ctx.fillStyle=g.circuit.ring;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(txt,cxM,py+ph/2);
+  });
+}
+function drawGroupLabelsCompact(ctx,cables,ox,oy,fH,SC){
+  if(!cables.length)return;const grp={};cables.forEach(c=>{const k=c.gi;if(!grp[k])grp[k]={cables:[],circuit:c.circuit};grp[k].cables.push(c);});
+  Object.values(grp).forEach(g=>{const xs=g.cables.map(c=>ox+c.x*SC);const cxM=(Math.min(...xs)+Math.max(...xs))/2;const cyT=Math.min(...g.cables.map(c=>oy+fH-c.y*SC-c.r*SC));const txt=g.circuit.name.substring(0,10);ctx.font=`bold 7.5px 'Barlow Condensed',sans-serif`;const tw=ctx.measureText(txt).width;ctx.fillStyle='rgba(255,255,255,0.93)';ctx.fillRect(cxM-tw/2-3,cyT-14,tw+6,11);ctx.fillStyle=g.circuit.ring;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(txt,cxM,cyT-8);});
+}
+function drawConduitLabels(ctx,cables,ccx,ccy,SC,innerR){
+  if(!cables.length)return;const grp={};cables.forEach(c=>{const k=c.gi;if(!grp[k])grp[k]={cables:[],circuit:c.circuit};grp[k].cables.push(c);});
+  const topY=ccy-innerR*SC-8;let i=0;
+  Object.values(grp).forEach(g=>{const cxM=ccx+g.cables.reduce((s,c)=>s+c.cx,0)/g.cables.length*SC;const txt=g.circuit.name;ctx.font=`bold 9.5px 'Barlow Condensed',sans-serif`;const tw=ctx.measureText(txt).width;const pw=tw+12,ph=14,px=cxM-pw/2,py=topY-i*18-ph;const pg=ctx.createLinearGradient(px,py,px,py+ph);pg.addColorStop(0,'rgba(255,255,255,0.97)');pg.addColorStop(1,'rgba(240,246,252,0.97)');ctx.fillStyle=pg;rr(ctx,px,py,pw,ph,4);ctx.fill();ctx.strokeStyle=g.circuit.ring;ctx.lineWidth=1.4;rr(ctx,px,py,pw,ph,4);ctx.stroke();ctx.fillStyle=g.circuit.ring;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(txt,cxM,py+ph/2);i++;});
+}
+function drawSpacingIndicators(ctx,cables,ox,oy,fH,SC){
+  const grp={};cables.forEach(c=>{const k=c.gi;if(!grp[k])grp[k]={minX:Infinity,maxX:-Infinity};grp[k].minX=Math.min(grp[k].minX,c.x-c.r);grp[k].maxX=Math.max(grp[k].maxX,c.x+c.r);});
+  const gL=Object.values(grp).sort((a,b)=>a.minX-b.minX);const bY=oy+fH+18;const T='rgba(63,158,162,0.75)';ctx.save();ctx.strokeStyle=T;ctx.fillStyle=T;ctx.lineWidth=0.9;ctx.font=`7px 'JetBrains Mono',monospace`;ctx.textAlign='center';
+  for(let i=0;i<gL.length-1;i++){const x1=ox+gL[i].maxX*SC,x2=ox+gL[i+1].minX*SC,mid=(x1+x2)/2;ctx.beginPath();ctx.moveTo(x1+2,bY);ctx.lineTo(x2-2,bY);ctx.stroke();ctx.beginPath();ctx.moveTo(x1,bY-3);ctx.lineTo(x1+5,bY);ctx.lineTo(x1,bY+3);ctx.closePath();ctx.fill();ctx.beginPath();ctx.moveTo(x2,bY-3);ctx.lineTo(x2-5,bY);ctx.lineTo(x2,bY+3);ctx.closePath();ctx.fill();ctx.fillText('1Ø',mid,bY-5);}ctx.restore();
+}
+function drawCotas(ctx,ox,oy,fW,fH,tW,tH,compact){
+  const T='rgb(63,158,162)',FS=compact?8:10;ctx.save();ctx.strokeStyle=T;ctx.fillStyle=T;ctx.lineWidth=1;ctx.font=`bold ${FS}px 'JetBrains Mono',monospace`;
+  const arr=(x,y,ang,sz=5.5)=>{const a=ang*Math.PI/180;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x-sz*Math.cos(a-0.4),y-sz*Math.sin(a-0.4));ctx.lineTo(x-sz*Math.cos(a+0.4),y-sz*Math.sin(a+0.4));ctx.closePath();ctx.fill();};
+  const lbl=(text,x,y,rot=0)=>{ctx.save();ctx.translate(x,y);ctx.rotate(rot);const m=ctx.measureText(text).width;ctx.fillStyle='rgba(245,247,250,0.95)';ctx.fillRect(-m/2-4,-7,m+8,13);ctx.fillStyle=T;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(text,0,0);ctx.restore();};
+  const OB=compact?20:28,OL=compact?22:30;
+  const CB=oy+fH+OB;ctx.setLineDash([3,3]);ctx.beginPath();ctx.moveTo(ox,oy+fH);ctx.lineTo(ox,CB+4);ctx.stroke();ctx.beginPath();ctx.moveTo(ox+fW,oy+fH);ctx.lineTo(ox+fW,CB+4);ctx.stroke();ctx.setLineDash([]);ctx.beginPath();ctx.moveTo(ox,CB);ctx.lineTo(ox+fW,CB);ctx.stroke();arr(ox,CB,0);arr(ox+fW,CB,180);lbl(`${tW} mm`,ox+fW/2,CB);
+  const CL=ox-OL;ctx.setLineDash([3,3]);ctx.beginPath();ctx.moveTo(ox,oy);ctx.lineTo(CL-4,oy);ctx.stroke();ctx.beginPath();ctx.moveTo(ox,oy+fH);ctx.lineTo(CL-4,oy+fH);ctx.stroke();ctx.setLineDash([]);ctx.beginPath();ctx.moveTo(CL,oy);ctx.lineTo(CL,oy+fH);ctx.stroke();arr(CL,oy,270);arr(CL,oy+fH,90);lbl(`${tH} mm`,CL,oy+fH/2,-Math.PI/2);
+  ctx.font=`bold ${FS-1}px 'JetBrains Mono',monospace`;ctx.fillStyle=T;ctx.textAlign='center';ctx.fillText('A',ox-7,oy-15);ctx.fillText('A',ox+fW+7,oy-15);ctx.strokeStyle='rgba(63,158,162,0.38)';ctx.lineWidth=0.8;ctx.setLineDash([5,4]);ctx.beginPath();ctx.moveTo(ox-14,oy-8);ctx.lineTo(ox+fW+14,oy-8);ctx.stroke();ctx.setLineDash([]);ctx.lineWidth=1.6;ctx.strokeStyle=T;[-14,fW+14].forEach(dx=>{ctx.beginPath();ctx.moveTo(ox+dx,oy-16);ctx.lineTo(ox+dx,oy);ctx.stroke();});ctx.restore();
+}
+function drawStatus(ctx,ox,oy,fW,fH,fp,mf,sW,ov,compact){
+  const FS=compact?9:11.5,y=oy+fH+(compact?26:34);ctx.save();ctx.font=`bold ${FS}px 'Barlow Condensed',sans-serif`;ctx.textAlign='left';ctx.textBaseline='top';ctx.fillStyle=fp>mf?'#dc2626':fp>mf*0.8?'#8a6000':'#16a34a';ctx.fillText(fp>mf?`⚠  ${fp.toFixed(1)}% — SUPERDIMENSIONADO (lim. ${mf.toFixed(0)}%)`:`✓  ${fp.toFixed(1)}% — dentro do limite (${mf.toFixed(0)}%)`,ox,y);if(sW){ctx.fillStyle='#dc2626';ctx.fillText('⚠  Afastamento >=1Ø impossível — aumente o leito',ox,y+(compact?11:15));}if(ov&&!sW){ctx.fillStyle='#dc2626';ctx.fillText('⚠  Cabos excedem o leito — selecione secao maior',ox,y+(compact?11:15));}ctx.restore();
+}
+function drawTitleBlock(ctx,CW,CH,trecho,compact){
+  const BH=compact?42:60,BY=CH-BH,AMB='rgb(250,179,39)',T='rgb(63,158,162)',INK='rgb(13,13,13)',M='rgb(100,112,130)',FS=compact?7:8,FSV=compact?9:10;
+  ctx.fillStyle='rgba(248,249,250,0.97)';ctx.fillRect(0,BY,CW,BH);ctx.strokeStyle='rgba(200,200,200,0.8)';ctx.lineWidth=0.7;ctx.beginPath();ctx.moveTo(0,BY);ctx.lineTo(CW,BY);ctx.stroke();ctx.fillStyle=AMB;ctx.fillRect(0,BY,CW,2.5);
+  const c1=CW*0.3,c2=CW*0.56,c3=CW*0.78;[c1,c2,c3].forEach(x=>{ctx.fillStyle='rgba(200,200,200,0.55)';ctx.fillRect(x,BY+2.5,0.7,BH-2.5);});
+  const cell=(lbl,val,x,y1,y2)=>{ctx.fillStyle=M;ctx.font=`${FS}px 'JetBrains Mono',monospace`;ctx.textAlign='left';ctx.fillText(lbl,x+6,BY+y1);ctx.fillStyle=INK;ctx.font=`bold ${FSV}px 'JetBrains Mono',monospace`;ctx.fillText(val,x+6,BY+y2);};
+  const tL=S.type==='leito'?'LEITO':S.type==='calha'?'CALHA':'ELETRODUTO';
+  const dL=S.type==='eletroduto'?`Ø ${S.conduitD}mm`:`${S.trayW}×${S.trayH}mm`;
+  const aL=S.arrMode==='trefoil'?'TRIFÓLIO':S.arrMode==='bundle'?'EM FEIXE':'EM PLANO';
+  const fp=fillPct(),mf=getMaxFill()*100,gf=S.spacing?1.00:getGF(numCircuitGroups());
+  if(compact){
+    cell('TRECHO / TIPO',`${trecho.id} — ${trecho.name||'Trecho '+trecho.id} · ${tL} ${dL}`,0,13,26);cell('CABO / ARRANJO',`${S.cableType} · ${aL}${S.spacing?' · AFT.>=1Ø':''}`,c1,13,26);cell('PREENCH. / fg',`${fp.toFixed(1)}% (lim ${mf.toFixed(0)}%) · fg=${gf.toFixed(2)}`,c2,13,26);
+    ctx.beginPath();ctx.arc(c3+18,BY+BH/2,11,0,Math.PI*2);ctx.fillStyle=AMB;ctx.fill();ctx.fillStyle=INK;ctx.font=`bold 9px 'Barlow Condensed',sans-serif`;ctx.textAlign='center';ctx.fillText('IN',c3+18,BY+BH/2+3);ctx.fillStyle=INK;ctx.font=`bold 11px 'Barlow Condensed',sans-serif`;ctx.textAlign='left';ctx.fillText('Eng. Igor Nardy',c3+34,BY+BH/2-1);ctx.fillStyle=M;ctx.font=`6px 'JetBrains Mono',monospace`;ctx.fillText('NBR 5410',c3+34,BY+BH/2+9);
+  } else {
+    cell('TRECHO',`${trecho.id} — ${trecho.name||'Trecho '+trecho.id}`,0,14,26);cell('TIPO / DIMENSÕES',`${tL} · ${dL}`,0,38,52);cell('CABO / ARRANJO',`${S.cableType} · ${aL}${S.spacing?' · AFT>=1Ø':''}`,c1,14,26);ctx.fillStyle=M;ctx.font=`${FS}px 'JetBrains Mono',monospace`;ctx.textAlign='left';ctx.fillText('PREENCH. / fg',c1+6,BY+38);ctx.fillStyle=fp>mf?'#dc2626':fp>mf*0.8?'#8a6000':'#16a34a';ctx.font=`bold ${FSV}px 'JetBrains Mono',monospace`;ctx.fillText(`${fp.toFixed(1)}% (lim ${mf.toFixed(0)}%)  ·  fg=${gf.toFixed(2)}`,c1+6,BY+52);cell('NORMA','NBR 5410 / IEC 60364',c2,14,26);ctx.fillStyle=M;ctx.font=`${FS}px 'JetBrains Mono',monospace`;ctx.textAlign='left';ctx.fillText('CORES',c2+6,BY+38);[{c:'#1a1a1a',l:'Fase'},{c:'#0c3cbe',l:'Neutro'},{c:'#0b6b1c',l:'Terra'}].forEach((it,i)=>{const rx=c2+10+i*56,ry=BY+52;ctx.beginPath();ctx.arc(rx,ry,4,0,Math.PI*2);ctx.fillStyle=it.c;ctx.fill();ctx.fillStyle=M;ctx.font=`${FS}px 'JetBrains Mono',monospace`;ctx.textAlign='left';ctx.fillText(it.l,rx+7,ry+3);});
+    ctx.beginPath();ctx.arc(c3+20,BY+BH/2,15,0,Math.PI*2);ctx.fillStyle=AMB;ctx.fill();ctx.fillStyle=INK;ctx.font=`bold 12px 'Barlow Condensed',sans-serif`;ctx.textAlign='center';ctx.fillText('IN',c3+20,BY+BH/2+4);ctx.fillStyle=INK;ctx.font=`bold 14px 'Barlow Condensed',sans-serif`;ctx.textAlign='left';ctx.fillText('Eng. Igor Nardy',c3+42,BY+BH/2-2);ctx.fillStyle=M;ctx.font=`${FS}px 'JetBrains Mono',monospace`;ctx.fillText('ENGENHEIRO ELETRICISTA',c3+42,BY+BH/2+10);ctx.fillText(new Date().toLocaleDateString('pt-BR'),c3+42,BY+BH/2+22);
+  }
+}
+
+// ═══════════════════════════════════════════════════════
+//  EXPORT
+// ═══════════════════════════════════════════════════════
+function exportPNG(){
+  const at=getAT();if(!at.circuits.length){alert('Adicione circuitos antes de exportar.');return;}
+  const exp=document.createElement('canvas');exp.width=1600;exp.height=700;
+  drawSection(exp.getContext('2d'),exp.width,exp.height,at,{bg:'#fff',compact:false});
+  const a=document.createElement('a');a.download=`Leito_Trecho${at.id}.png`;a.href=exp.toDataURL('image/png',1.0);a.click();
+}
+function exportPDF(){
+  if(!window.jspdf){alert('jsPDF não disponível.');return;}
+  const{jsPDF}=window.jspdf;const validT=S.trechos.filter(t=>t.circuits.length>0);
+  if(!validT.length){alert('Nenhum trecho com circuitos.');return;}
+  const doc=new jsPDF({orientation:'landscape',unit:'mm',format:'a3'});
+  const PW=420,PH=297,MARG=10,GAP=5,COLS=2,ROWS=2;
+  const cellW=(PW-MARG*2-GAP*(COLS-1))/COLS,cellH=(PH-MARG*2-GAP*(ROWS-1))/ROWS;
+  const RES=3.2,cvW=Math.round(cellW*RES),cvH=Math.round(cellH*RES);
+  validT.forEach((t,i)=>{
+    const pp=i%(COLS*ROWS),col=pp%COLS,row=Math.floor(pp/COLS);
+    if(pp===0&&i>0)doc.addPage('a3','landscape');
+    const cv=document.createElement('canvas');cv.width=cvW;cv.height=cvH;
+    drawSection(cv.getContext('2d'),cvW,cvH,t,{bg:'#fff',compact:true});
+    doc.addImage(cv.toDataURL('image/jpeg',0.92),'JPEG',MARG+col*(cellW+GAP),MARG+row*(cellH+GAP),cellW,cellH,'','FAST');
+  });
+  doc.save(`Detalhes_Leito_${new Date().toLocaleDateString('pt-BR').replace(/\//g,'-')}.pdf`);
+}
+
+// ═══════════════════════════════════════════════════════
+//  PRE-FINALIZATION PAGE
+// ═══════════════════════════════════════════════════════
+// Checklist items
+
+// ═══════════════════════════════════════════════════════
+//  DETAILS PAGE
+// ═══════════════════════════════════════════════════════
+function renderDetails(){
+  const page=document.getElementById('det-content');
+  const validT=S.trechos.filter(t=>t.circuits.length>0);
+  if(!validT.length){page.innerHTML='<div style="padding:60px;text-align:center;color:#999;font-family:var(--mono);font-size:11px">Adicione circuitos no dimensionador</div>';return;}
+
+  const scaleEl=document.getElementById('det-scale');
+  const scalePref=scaleEl?scaleEl.value:'auto';
+
+  // Create one canvas per trecho (high-res)
+  page.innerHTML='';
+  validT.forEach(t=>{
+    const wrap=document.createElement('div');wrap.className='det-card';wrap.style.position='relative';
+    const lbl=document.createElement('div');lbl.className='det-card-label';lbl.textContent=`Trecho ${t.id} — ${t.name||'Trecho '+t.id}`;
+    const cv=document.createElement('canvas');
+    const W=1200,H=480;
+    cv.width=W;cv.height=H;cv.style.width='100%';cv.style.height='auto';cv.style.display='block';
+    const ctx=cv.getContext('2d');
+    // Force white background
+    ctx.fillStyle='#fff';ctx.fillRect(0,0,W,H);
+    drawSectionHD(ctx,W,H,t);
+    wrap.appendChild(lbl);wrap.appendChild(cv);
+    page.appendChild(wrap);
+  });
+  document.getElementById('det-title').textContent=`Detalhes HD — ${validT.length} trecho(s)`;
+}
+
+function drawSectionHD(ctx,CW,CH,trecho){
+  const tW=S.type==='eletroduto'?S.conduitD:S.trayW;
+  const tH=S.type==='eletroduto'?S.conduitD:S.trayH;
+  const isRound=S.type==='eletroduto',WMM=wallMM();
+  const COTA_L=68,COTA_R=18,LABEL_TOP=52,MT=20,MB_COTA=32,MB_TITLE=70;
+  const availW=CW-COTA_L-COTA_R,availH=CH-MT-LABEL_TOP-MB_COTA-MB_TITLE;
+  const result=packTrecho(trecho);const{cables,spacingWarn,overflowW,overflowH,isConduit}=result;
+  let SC=Math.min(availW/tW,availH/tH);
+  if(cables.length){const minR=cables.reduce((m,c)=>Math.min(m,c.r),Infinity);if(minR*SC<10)SC=Math.min(SC,10/minR);}
+  const fW=tW*SC,fH=tH*SC;
+  const ox=COTA_L+(availW-fW)/2,oy=MT+LABEL_TOP+(availH-fH)/2;
+  const WALL=WMM*SC;
+
+  // WHITE BG
+  ctx.fillStyle='#fff';ctx.fillRect(0,0,CW,CH);
+
+  // Fine grid (very subtle on white)
+  ctx.strokeStyle='rgba(180,195,210,0.35)';ctx.lineWidth=0.6;
+  const GS=40;
+  for(let gx=0;gx<CW;gx+=GS){ctx.beginPath();ctx.moveTo(gx,0);ctx.lineTo(gx,CH);ctx.stroke();}
+  for(let gy=0;gy<CH;gy+=GS){ctx.beginPath();ctx.moveTo(0,gy);ctx.lineTo(CW,gy);ctx.stroke();}
+
+  // Subtle tray shadow
+  ctx.save();ctx.shadowColor='rgba(0,0,0,0.13)';ctx.shadowBlur=20;ctx.shadowOffsetX=3;ctx.shadowOffsetY=6;
+  ctx.fillStyle='rgba(0,0,0,0.01)';
+  if(isRound)ctx.arc(ox+fW/2,oy+fH/2,fW/2+4,0,Math.PI*2);
+  else ctx.fillRect(ox-3,oy-3,fW+6,fH+6);
+  ctx.fill();ctx.restore();
+
+  // Draw tray fill, cables, outline, labels, cotas
+  drawTrayFill(ctx,ox,oy,fW,fH,WALL,isRound);
+  const{clipX,clipY,clipW,clipH}=getInnerClip(ox,oy,fW,fH,WALL);
+  ctx.save();ctx.beginPath();
+  if(isRound)ctx.arc(ox+fW/2,oy+fH/2,fW/2-WALL,0,Math.PI*2);
+  else ctx.rect(clipX,clipY,clipW,clipH);
+  ctx.clip();
+  if(isConduit){const ccx=ox+fW/2,ccy=oy+fH/2;cables.forEach(c=>{const rp=c.r*SC;if(rp>0.5)drawCable(ctx,ccx+c.cx*SC,ccy-c.cy*SC,rp,c.type,c.section,c.ring,false);});}
+  else{cables.forEach(c=>{const rp=c.r*SC;if(rp>0.5)drawCable(ctx,ox+c.x*SC,oy+fH-c.y*SC,rp,c.type,c.section,c.ring,false);});}
+  ctx.restore();
+  drawTrayOutline(ctx,ox,oy,fW,fH,WALL,isRound);
+
+  // Labels
+  if(isConduit)drawConduitLabels(ctx,cables,ox+fW/2,oy+fH/2,SC,result.innerR);
+  else drawGroupLabels(ctx,cables,ox,oy,fH,SC);
+
+  if(S.spacing&&!spacingWarn&&cables.length>0&&!isConduit)drawSpacingIndicators(ctx,cables,ox,oy,fH,SC);
+
+  // Cotas (HD version with bigger font)
+  drawCotasHD(ctx,ox,oy,fW,fH,tW,tH);
+  drawStatusHD(ctx,ox,oy,fW,fH,fillPctForTrecho(trecho),getMaxFill()*100,spacingWarn,overflowW||overflowH);
+  drawTitleBlockHD(ctx,CW,CH,trecho);
+}
+
+function fillPctForTrecho(t){
+  const ca=t.circuits.reduce((s,c)=>{const cs=getCfgTypes(c.cfg,c.section);return s+cs.reduce((ts,cd)=>{const r=getDiam(cd.section)/2;return ts+Math.PI*r*r;},0)*c.qty;},0);
+  const ta=getTrayArea();return ta?ca/ta*100:0;
+}
+
+function drawCotasHD(ctx,ox,oy,fW,fH,tW,tH){
+  const T='rgb(63,158,162)',FS=11;ctx.save();ctx.strokeStyle=T;ctx.fillStyle=T;ctx.lineWidth=1.2;ctx.font=`bold ${FS}px 'JetBrains Mono',monospace`;
+  const arr=(x,y,ang,sz=7)=>{const a=ang*Math.PI/180;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x-sz*Math.cos(a-0.4),y-sz*Math.sin(a-0.4));ctx.lineTo(x-sz*Math.cos(a+0.4),y-sz*Math.sin(a+0.4));ctx.closePath();ctx.fill();};
+  const lbl=(text,x,y,rot=0)=>{ctx.save();ctx.translate(x,y);ctx.rotate(rot);const m=ctx.measureText(text).width;ctx.fillStyle='rgba(255,255,255,0.96)';ctx.fillRect(-m/2-5,-8,m+10,15);ctx.fillStyle=T;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(text,0,0);ctx.restore();};
+  const OB=34,OL=36;
+  // Width
+  const CB=oy+fH+OB;ctx.setLineDash([4,3]);ctx.beginPath();ctx.moveTo(ox,oy+fH);ctx.lineTo(ox,CB+5);ctx.stroke();ctx.beginPath();ctx.moveTo(ox+fW,oy+fH);ctx.lineTo(ox+fW,CB+5);ctx.stroke();ctx.setLineDash([]);ctx.beginPath();ctx.moveTo(ox,CB);ctx.lineTo(ox+fW,CB);ctx.stroke();arr(ox,CB,0);arr(ox+fW,CB,180);lbl(`${tW} mm`,ox+fW/2,CB);
+  // Height
+  const CL=ox-OL;ctx.setLineDash([4,3]);ctx.beginPath();ctx.moveTo(ox,oy);ctx.lineTo(CL-5,oy);ctx.stroke();ctx.beginPath();ctx.moveTo(ox,oy+fH);ctx.lineTo(CL-5,oy+fH);ctx.stroke();ctx.setLineDash([]);ctx.beginPath();ctx.moveTo(CL,oy);ctx.lineTo(CL,oy+fH);ctx.stroke();arr(CL,oy,270);arr(CL,oy+fH,90);lbl(`${tH} mm`,CL,oy+fH/2,-Math.PI/2);
+  // A-A
+  ctx.font=`bold 10px 'JetBrains Mono',monospace`;ctx.fillStyle=T;ctx.textAlign='center';ctx.fillText('A',ox-8,oy-17);ctx.fillText('A',ox+fW+8,oy-17);ctx.strokeStyle='rgba(63,158,162,0.38)';ctx.lineWidth=0.8;ctx.setLineDash([6,4]);ctx.beginPath();ctx.moveTo(ox-16,oy-10);ctx.lineTo(ox+fW+16,oy-10);ctx.stroke();ctx.setLineDash([]);ctx.lineWidth=1.8;ctx.strokeStyle=T;[-16,fW+16].forEach(dx=>{ctx.beginPath();ctx.moveTo(ox+dx,oy-18);ctx.lineTo(ox+dx,oy);ctx.stroke();});ctx.restore();
+}
+
+function drawStatusHD(ctx,ox,oy,fW,fH,fp,mf,sW,ov){
+  const y=oy+fH+46;ctx.save();ctx.font=`bold 12px 'Barlow Condensed',sans-serif`;ctx.textAlign='left';ctx.textBaseline='top';ctx.fillStyle=fp>mf?'#dc2626':fp>mf*0.8?'#8a6000':'#16a34a';ctx.fillText(fp>mf?`⚠  ${fp.toFixed(1)}% — SUPERDIMENSIONADO (limite ${mf.toFixed(0)}%)`:`✓  ${fp.toFixed(1)}% preenchimento — dentro do limite (${mf.toFixed(0)}%)`,ox,y);if(sW){ctx.fillStyle='#dc2626';ctx.fillText('⚠  Distância livre > 2Ø impossível — aumente o leito',ox,y+16);}ctx.restore();
+}
+
+function drawTitleBlockHD(ctx,CW,CH,trecho){
+  const BH=64,BY=CH-BH,AMB='rgb(250,179,39)',T='rgb(63,158,162)',INK='rgb(13,13,13)',M='rgb(100,112,130)';
+  ctx.fillStyle='rgb(18,22,32)';ctx.fillRect(0,BY,CW,BH);
+  ctx.fillStyle=AMB;ctx.fillRect(0,BY,CW,3);
+  const c1=CW*0.28,c2=CW*0.54,c3=CW*0.76;
+  [c1,c2,c3].forEach(x=>{ctx.fillStyle='rgba(255,255,255,0.1)';ctx.fillRect(x,BY+3,0.8,BH-3);});
+  const cell=(lb,val,x,y1,y2)=>{ctx.fillStyle='rgba(180,195,210,0.7)';ctx.font=`8px 'JetBrains Mono',monospace`;ctx.textAlign='left';ctx.fillText(lb,x+8,BY+y1);ctx.fillStyle='#fff';ctx.font=`bold 11px 'JetBrains Mono',monospace`;ctx.fillText(val,x+8,BY+y2);};
+  const tL=S.type==='leito'?'LEITO':S.type==='calha'?'CALHA':'ELETRODUTO';
+  const dL=S.type==='eletroduto'?`Ø ${S.conduitD}mm`:`${S.trayW}×${S.trayH}mm`;
+  const aL=S.arrMode==='trefoil'?'TRIFÓLIO':S.arrMode==='bundle'?'EM FEIXE':'EM PLANO';
+  const fp=fillPctForTrecho(trecho),mf=getMaxFill()*100,gf=S.spacing?1.00:getGF(numCircuitGroups());
+  cell('TRECHO / DESCRIÇÃO',`${trecho.id} — ${trecho.name||'Trecho '+trecho.id}`,0,15,28);cell('TIPO / DIMENSÕES',`${tL} · ${dL}`,0,40,54);
+  cell('CABO / ARRANJO',`${S.cableType} · ${aL}${S.spacing?' · AFT>2Ø':''}`,c1,15,28);
+  ctx.fillStyle='rgba(180,195,210,0.7)';ctx.font=`8px 'JetBrains Mono',monospace`;ctx.textAlign='left';ctx.fillText('PREENCHIMENTO / fg',c1+8,BY+40);
+  ctx.fillStyle=fp>mf?'#f87171':fp>mf*0.8?AMB:'#4ade80';ctx.font=`bold 11px 'JetBrains Mono',monospace`;ctx.fillText(`${fp.toFixed(1)}% (lim ${mf.toFixed(0)}%) · fg = ${gf.toFixed(2)}`,c1+8,BY+54);
+  cell('NORMA','NBR 5410 / IEC 60364-5-52',c2,15,28);
+  ctx.fillStyle='rgba(180,195,210,0.7)';ctx.font=`8px 'JetBrains Mono',monospace`;ctx.fillText('LEGENDA DE CORES',c2+8,BY+40);
+  [{c:'#1a1a1a',l:'Fase'},{c:'#0c3cbe',l:'Neutro'},{c:'#0b6b1c',l:'Terra'}].forEach((it,i)=>{const rx=c2+12+i*72,ry=BY+53;ctx.beginPath();ctx.arc(rx,ry,5,0,Math.PI*2);ctx.fillStyle=it.c;ctx.fill();ctx.fillStyle='rgba(200,215,230,0.9)';ctx.font=`9px 'JetBrains Mono',monospace`;ctx.textAlign='left';ctx.fillText(it.l,rx+8,ry+3);});
+  ctx.beginPath();ctx.arc(c3+22,BY+BH/2,18,0,Math.PI*2);ctx.fillStyle=AMB;ctx.fill();ctx.fillStyle=INK;ctx.font=`bold 14px 'Barlow Condensed',sans-serif`;ctx.textAlign='center';ctx.fillText('IN',c3+22,BY+BH/2+5);ctx.fillStyle='#fff';ctx.font=`bold 16px 'Barlow Condensed',sans-serif`;ctx.textAlign='left';ctx.fillText('Eng. Igor Nardy',c3+48,BY+BH/2-4);ctx.fillStyle='rgba(180,195,210,0.7)';ctx.font=`8px 'JetBrains Mono',monospace`;ctx.fillText('ENGENHEIRO ELETRICISTA — NBR 5410',c3+48,BY+BH/2+10);ctx.fillText(new Date().toLocaleDateString('pt-BR'),c3+48,BY+BH/2+22);
+}
+
+function exportDetailsPNG(){
+  const validT=S.trechos.filter(t=>t.circuits.length>0);if(!validT.length){alert('Nenhum trecho com circuitos.');return;}
+  // Export all trechos as a single tall PNG
+  const W=1600,H=520*validT.length+40;
+  const cv=document.createElement('canvas');cv.width=W;cv.height=H;
+  const ctx=cv.getContext('2d');ctx.fillStyle='#fff';ctx.fillRect(0,0,W,H);
+  validT.forEach((t,i)=>{
+    ctx.save();ctx.translate(0,i*520+20);drawSectionHD(ctx,W,500,t);ctx.restore();
+  });
+  const a=document.createElement('a');a.download=`Detalhes_Leito_HD.png`;a.href=cv.toDataURL('image/png',1.0);a.click();
+}
+
+function exportDetailsPDF(){
+  if(!window.jspdf){alert('jsPDF não disponível.');return;}
+  const{jsPDF}=window.jspdf;const validT=S.trechos.filter(t=>t.circuits.length>0);
+  if(!validT.length){alert('Nenhum trecho com circuitos.');return;}
+  const doc=new jsPDF({orientation:'landscape',unit:'mm',format:'a3'});
+  const PW=420,PH=297,MARG=8,GAP=4,COLS=validT.length===1?1:2,ROWS=Math.ceil(validT.length/COLS);
+  const cellW=(PW-MARG*2-GAP*(COLS-1))/COLS,cellH=Math.min((PH-MARG*2-GAP*(ROWS-1))/ROWS,130);
+  const RES=4;
+  validT.forEach((t,i)=>{
+    const pp=i%(COLS*2),col=pp%COLS,row=Math.floor(pp/COLS);
+    if(pp===0&&i>0)doc.addPage('a3','landscape');
+    const cv=document.createElement('canvas');cv.width=Math.round(cellW*RES);cv.height=Math.round(cellH*RES);
+    const ctx=cv.getContext('2d');ctx.fillStyle='#fff';ctx.fillRect(0,0,cv.width,cv.height);
+    drawSectionHD(ctx,cv.width,cv.height,t);
+    doc.addImage(cv.toDataURL('image/jpeg',0.97),'JPEG',MARG+col*(cellW+GAP),MARG+row*(cellH+GAP),cellW,cellH,'','FAST');
+  });
+  doc.save(`Detalhes_Leito_A3_${new Date().toLocaleDateString('pt-BR').replace(/\//g,'-')}.pdf`);
+}
+
+// ── DXF EXPORT ──
+// Generates an AutoCAD-compatible DXF R12 file with all tray cross-sections
+function exportDXF(){
+  const validT=S.trechos.filter(t=>t.circuits.length>0);if(!validT.length){alert('Nenhum trecho com circuitos.');return;}
+  let dxf='';
+  // DXF header
+  dxf+='0\nSECTION\n2\nHEADER\n9\n$ACADVER\n1\nAC1006\n9\n$INSUNITS\n70\n4\n0\nENDSEC\n';
+  dxf+='0\nSECTION\n2\nTABLES\n0\nTABLE\n2\nLAYER\n70\n10\n';
+  // Layers
+  const layers=[['TRAY','5'],['CABLES_F','7'],['CABLES_N','5'],['CABLES_T','3'],['DIMS','6'],['TEXT','7'],['RINGS','2']];
+  layers.forEach(([name,color])=>{dxf+=`0\nLAYER\n2\n${name}\n70\n0\n62\n${color}\n6\nCONTINUOUS\n`;});
+  dxf+='0\nENDTAB\n0\nENDSEC\n';
+  dxf+='0\nSECTION\n2\nENTITIES\n';
+
+  const WMM=wallMM();
+  const SCALE=25.4; // 1 unit = 1mm at scale 1:1
+
+  validT.forEach((t,ti)=>{
+    const tW=S.type==='eletroduto'?S.conduitD:S.trayW;
+    const tH=S.type==='eletroduto'?S.conduitD:S.trayH;
+    const isRound=S.type==='eletroduto';
+    const offsetX=ti*(tW+50); // space trechos side by side
+    const result=packTrecho(t);const{cables,isConduit,innerR}=result;
+    const ox=offsetX,oy=0;
+
+    if(isRound){
+      // Outer conduit circle
+      dxf+=dxfCircle(ox+tW/2,oy+tH/2,tW/2,'TRAY');
+      // Inner (air space)
+      dxf+=dxfCircle(ox+tW/2,oy+tH/2,innerR,'TRAY');
+    } else {
+      const W2=WMM;
+      if(S.type==='leito'){
+        // U shape
+        dxf+=dxfLine(ox,oy,ox,oy+tH,'TRAY');dxf+=dxfLine(ox,oy+tH,ox+tW,oy+tH,'TRAY');dxf+=dxfLine(ox+tW,oy+tH,ox+tW,oy,'TRAY');
+        dxf+=dxfLine(ox+W2,oy,ox+W2,oy+tH-W2,'TRAY');dxf+=dxfLine(ox+W2,oy+tH-W2,ox+tW-W2,oy+tH-W2,'TRAY');dxf+=dxfLine(ox+tW-W2,oy+tH-W2,ox+tW-W2,oy,'TRAY');
+      } else {
+        // Closed box
+        dxf+=dxfRect(ox,oy,tW,tH,'TRAY');dxf+=dxfRect(ox+W2,oy+W2,tW-W2*2,tH-W2*2,'TRAY');
+      }
+    }
+
+    // Cables
+    if(isConduit){
+      cables.forEach(c=>{
+        const layer=c.type==='F'?'CABLES_F':c.type==='N'?'CABLES_N':'CABLES_T';
+        const cx=ox+tW/2+c.cx,cy=oy+tH/2-c.cy;
+        dxf+=dxfCircle(cx,cy,c.r,layer);
+        // Inner copper core
+        const coreR=(getCondDiam(c.section)/getDiam(c.section))*c.r;
+        dxf+=dxfCircle(cx,cy,coreR,'RINGS');
+        // Label
+        dxf+=dxfText(cx,cy,c.section>=1?String(Math.round(c.section)):c.section.toFixed(1),'TEXT',c.r*0.4);
+      });
+    } else {
+      cables.forEach(c=>{
+        const layer=c.type==='F'?'CABLES_F':c.type==='N'?'CABLES_N':'CABLES_T';
+        const cx=ox+c.x,cy=oy+c.y;
+        dxf+=dxfCircle(cx,cy,c.r,layer);
+        const coreR=(getCondDiam(c.section)/getDiam(c.section))*c.r;
+        dxf+=dxfCircle(cx,cy,coreR,'RINGS');
+        dxf+=dxfText(cx,cy,c.section>=1?String(Math.round(c.section)):c.section.toFixed(1),'TEXT',c.r*0.4);
+      });
+    }
+
+    // Width dimension line (below)
+    const dimY=oy-15;const fp=fillPctForTrecho(t);
+    dxf+=dxfLine(ox,dimY,ox+tW,dimY,'DIMS');
+    dxf+=dxfLine(ox,oy,ox,dimY-3,'DIMS');dxf+=dxfLine(ox+tW,oy,ox+tW,dimY-3,'DIMS');
+    dxf+=dxfText(ox+tW/2,dimY-5,`L=${tW}mm`,'TEXT',2.5);
+    // Height dimension line (left)
+    const dimX=ox-15;
+    dxf+=dxfLine(dimX,oy,dimX,oy+tH,'DIMS');dxf+=dxfLine(ox,oy,dimX-3,oy,'DIMS');dxf+=dxfLine(ox,oy+tH,dimX-3,oy+tH,'DIMS');
+    dxf+=dxfText(dimX-5,oy+tH/2,`H=${tH}mm`,'TEXT',2.5);
+    // Trecho label
+    dxf+=dxfText(ox+tW/2,oy+tH+8,`Trecho ${t.id} — ${t.name||''} — ${S.cableType} — ${fp.toFixed(1)}% preench.`,'TEXT',3);
+  });
+
+  dxf+='0\nENDSEC\n0\nEOF\n';
+
+  // Unescape \n to actual 
+
+  const out=dxf.replace(/\n/g,'\n');
+  const blob=new Blob([out],{type:'application/dxf'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`Leitos_Calhas_NBR5410.dxf`;a.click();
+}
+
+function dxfLine(x1,y1,x2,y2,layer){return `0\nLINE\n8\n${layer}\n10\n${x1.toFixed(3)}\n20\n${y1.toFixed(3)}\n30\n0.0\n11\n${x2.toFixed(3)}\n21\n${y2.toFixed(3)}\n31\n0.0\n`;}
+function dxfCircle(cx,cy,r,layer){return `0\nCIRCLE\n8\n${layer}\n10\n${cx.toFixed(3)}\n20\n${cy.toFixed(3)}\n30\n0.0\n40\n${r.toFixed(3)}\n`;}
+function dxfRect(x,y,w,h,layer){return dxfLine(x,y,x+w,y,layer)+dxfLine(x+w,y,x+w,y+h,layer)+dxfLine(x+w,y+h,x,y+h,layer)+dxfLine(x,y+h,x,y,layer);}
+function dxfText(x,y,text,layer,h=2.5){return `0\nTEXT\n8\n${layer}\n10\n${x.toFixed(3)}\n20\n${y.toFixed(3)}\n30\n0.0\n40\n${h.toFixed(2)}\n1\n${text}\n72\n1\n11\n${x.toFixed(3)}\n21\n${y.toFixed(3)}\n31\n0.0\n`;}
+
+//  INIT
+// ═══════════════════════════════════════════════════════
+// Set default date
+render();
+const _ro=new ResizeObserver(()=>{if(document.getElementById('pg-designer').classList.contains('active'))renderCanvas();});
+_ro.observe(document.querySelector('.cv-shell'));
+</script>
+</body>
+</html>
